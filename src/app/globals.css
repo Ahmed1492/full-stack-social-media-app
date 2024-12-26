@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.mobileMenueHeight,
+.customHeight {
+  height: calc(100vh - 96px);
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
