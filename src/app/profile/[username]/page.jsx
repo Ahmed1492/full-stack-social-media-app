@@ -24,7 +24,7 @@ export default async function ProfilePage({ params }) {
       },
     },
   });
-  console.log(user);
+  // console.log(user);
   if (!user) return notFound();
 
   const { userId: currentUserId } = auth();

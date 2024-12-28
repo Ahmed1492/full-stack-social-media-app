@@ -1,6 +1,6 @@
 "use client";
 
-import { switchFollow } from "@/lib/actions";
+import { switchBlock, switchFollow } from "@/lib/actions";
 import { useOptimistic, useState } from "react";
 
 export default function UserInfoCardInteractions({
@@ -17,7 +17,7 @@ export default function UserInfoCardInteractions({
   });
   const follow = async () => {
     try {
-      switchOptimisticFollow();
+      switchOptimisticState("follow");
       await switchFollow(userId);
       setUserState((prev) => ({
         ...prev,
@@ -30,31 +30,50 @@ export default function UserInfoCardInteractions({
     }
   };
 
-  const [optimisticFollow, switchOptimisticFollow] = useOptimistic(
+  const block = async () => {
+    switchOptimisticState("block");
+    try {
+      await switchBlock(userId);
+      setUserState((prev) => ({
+        ...prev,
+        blocked: !prev.blocked,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const [optimisticState, switchOptimisticState] = useOptimistic(
     userState,
-    (state) => ({
-      ...state,
-      following: state.following && false,
-      followingRequestSent:
-        !state.following && !state.followingRequestSent ? true : false,
-    })
+    (state, value) =>
+      value == "follow"
+        ? {
+            ...state,
+            following: state.following && false,
+            followingRequestSent:
+              !state.following && !state.followingRequestSent ? true : false,
+          }
+        : {
+            ...state,
+            blocked: !state.blocked,
+          }
   );
 
   return (
     <div className="flex flex-col gap-3">
       <form action={follow}>
         <button className=" w-full bg-blue-500 text-white p-2 rounded-lg text-sm m-auto">
-          {optimisticFollow.following
+          {optimisticState.following
             ? "Following"
-            : optimisticFollow.followingRequestSent
+            : optimisticState.followingRequestSent
             ? "Frient Request Sent"
             : "Follow"}
         </button>
       </form>
-      <form action="">
+      <form action={block}>
         <div className="flex items-center justify-end">
           <button className="text-sm text-red-600 cursor-pointer font-medium">
-            {optimisticFollow.blocked ? "Unblock User" : "Block User"}
+            {optimisticState.blocked ? "Unblock User" : "Block User"}
           </button>
         </div>
       </form>

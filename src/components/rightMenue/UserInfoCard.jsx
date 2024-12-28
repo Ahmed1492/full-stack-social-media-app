@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
 import React from "react";
 import UserInfoInteractions from "@/components/rightMenue/UserInfoCardInteractions";
+import UpdateUser from "@/components/rightMenue/UpdateUser";
 export default async function UserInfoCard({ user }) {
   const rawDate = new Date(user.createdAt); // Current date
   const formattedDate = rawDate.toLocaleDateString("en-US", {
@@ -46,7 +47,11 @@ export default async function UserInfoCard({ user }) {
     <div className="p-4 bg-white shadow-md rounded-lg  flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <span className="font-medium text-gray-500">User Information</span>
-        <span className="font-medium text-blue-400">See All</span>
+        {currentUserId === user.id ? (
+          <UpdateUser />
+        ) : (
+          <span className="font-medium text-blue-400">See All</span>
+        )}
       </div>
       <div className="flex items-center gap-3">
         <span className="text-2xl text-gray-800 font-medium">
@@ -100,13 +105,15 @@ export default async function UserInfoCard({ user }) {
           </div>
         </div>
       </div>
-      <UserInfoInteractions
-        userId={user.id}
-        currentUserId={currentUserId}
-        isUserBlocked={isUserBlocked}
-        isFollowing={isFollowing}
-        isFollowingSent={isFollowingSent}
-      />
+      {currentUserId && currentUserId !== user.id && (
+        <UserInfoInteractions
+          userId={user.id}
+          currentUserId={currentUserId}
+          isUserBlocked={isUserBlocked}
+          isFollowing={isFollowing}
+          isFollowingSent={isFollowingSent}
+        />
+      )}
     </div>
   );
 }
