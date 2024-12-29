@@ -20,7 +20,7 @@ const Homepage = () => {
       </div>
       {/* Right */}
       <div className="hidden lg:block w-[33%]">
-        <RightMenue />
+        <RightMenue user={null} />
       </div>
     </div>
   );

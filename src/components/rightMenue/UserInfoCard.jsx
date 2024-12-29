@@ -48,7 +48,7 @@ export default async function UserInfoCard({ user }) {
       <div className="flex items-center justify-between">
         <span className="font-medium text-gray-500">User Information</span>
         {currentUserId === user.id ? (
-          <UpdateUser />
+          <UpdateUser user={user} />
         ) : (
           <span className="font-medium text-blue-400">See All</span>
         )}

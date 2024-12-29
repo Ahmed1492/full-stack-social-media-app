@@ -15,8 +15,7 @@ export default async function FriendRequests() {
   });
 
   if (!userId) return null;
-  // if (requests.length === 0) return null;
-  console.log("request >>>", requests);
+  if (requests.length === 0) return null;
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-4">

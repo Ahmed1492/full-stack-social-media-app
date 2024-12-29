@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import prisma from "./client";
+import { object, z } from "zod";
 
 export const switchFollow = async (userId: string) => {
   const { userId: currentUser } = auth();
@@ -129,5 +130,42 @@ export const rejectFollowRequest = async (userId: string) => {
   } catch (error) {
     console.log(error);
     throw new Error("Some Thing went Wrong !");
+  }
+};
+
+export const updateProfile = async (formData: FormData) => {
+  const fields = Object.fromEntries(formData);
+  const filteredFields = Object.fromEntries(
+    Object.entries(fields).filter(([_, value]) => value !== "")
+  );
+  console.log(fields);
+
+  const Profile = z.object({
+    cover: z.string().optional(),
+    name: z.string().max(60).optional(),
+    surname: z.string().max(60).optional(),
+    description: z.string().max(255).optional(),
+    city: z.string().max(60).optional(),
+    school: z.string().max(60).optional(),
+    work: z.string().max(60).optional(),
+    website: z.string().max(60).optional(),
+  });
+
+  const validatedFileds = Profile.safeParse(filteredFields);
+  if (!validatedFileds.success) {
+    console.log(validatedFileds.error.flatten().fieldErrors);
+    return "error";
+  }
+  try {
+    const { userId: currentUser } = auth();
+    if (!currentUser) throw new Error("You Are not Authenticated ! ");
+    await prisma.user.update({
+      where: {
+        id: currentUser,
+      },
+      data: validatedFileds.data,
+    });
+  } catch (error) {
+    console.log(error);
   }
 };
