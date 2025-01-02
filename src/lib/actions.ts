@@ -133,7 +133,11 @@ export const rejectFollowRequest = async (userId: string) => {
   }
 };
 
-export const updateProfile = async (formData: FormData) => {
+export const updateProfile = async (
+  prevState: { sucess: boolean; error: boolean },
+  payload: { formData: FormData; cover: string }
+) => {
+  const { formData, cover } = payload;
   const fields = Object.fromEntries(formData);
   const filteredFields = Object.fromEntries(
     Object.entries(fields).filter(([_, value]) => value !== "")
@@ -151,21 +155,23 @@ export const updateProfile = async (formData: FormData) => {
     website: z.string().max(60).optional(),
   });
 
-  const validatedFileds = Profile.safeParse(filteredFields);
+  const validatedFileds = Profile.safeParse({ cover, ...filteredFields });
   if (!validatedFileds.success) {
     console.log(validatedFileds.error.flatten().fieldErrors);
-    return "error";
+    return { success: false, error: true };
   }
   try {
     const { userId: currentUser } = auth();
-    if (!currentUser) throw new Error("You Are not Authenticated ! ");
+    if (!currentUser) return { success: false, error: true };
     await prisma.user.update({
       where: {
         id: currentUser,
       },
       data: validatedFileds.data,
     });
+    return { success: true, error: false };
   } catch (error) {
     console.log(error);
+    return { success: false, error: true };
   }
 };

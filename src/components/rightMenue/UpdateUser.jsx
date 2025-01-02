@@ -1,15 +1,24 @@
 "use client";
 
 import { updateProfile } from "@/lib/actions";
+import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
-import { useState } from "react";
-
+import { useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
+import UpdateButton from "@/components/rightMenue/UpdateButton";
 export default function UpdateUser({ user }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [cover, setCover] = useState();
+  const router = useRouter();
+  const [state, formAction] = useActionState(updateProfile, {
+    sucess: false,
+    error: false,
+  });
+
   const handleClose = () => {
     setIsOpen(false);
+    state.success && router.refresh();
   };
-  console.log("Update User : ", user);
 
   return (
     <div className="">
@@ -24,31 +33,44 @@ export default function UpdateUser({ user }) {
         <div className="absolute w-full h-screen top-0 left-0 bg-black bg-opacity-65 flex items-center justify-center z-50">
           <form
             className="p-12 bg-white rounded-lg shadow-md flex flex-col gap-2 w-full md:w-1/2 xl:w-1/3 relative"
-            action={updateProfile}
+            action={(formData) =>
+              formAction({ formData, cover: cover?.secure_url })
+            }
           >
             <h2 className="text-xl font-bold text-center mb-3">
-              {" "}
-              Update Profile{" "}
+              Update Profile
             </h2>
             <p className="text-sm text-gray-500 ">
               Use the navbar to change the avatar or usename .
             </p>
-            {/* Change Image */}
-            <div className="">
-              <label className="mt-4 text-lg font-bold " htmlFor="">
-                Cover Picture
-              </label>
-              <div className="flex items-center gap-3 text-sm  cursor-pointe mt-4">
-                <Image
-                  src={user.cover}
-                  alt=""
-                  width={56}
-                  height={56}
-                  className="w-14 h-14 object-cover rounded-lg"
-                />
-                <span className="text-gray-500 cursor-pointer">Change</span>
-              </div>
-            </div>
+
+            {/* Change Image  Using Cloudinary*/}
+            <CldUploadWidget
+              uploadPreset="social"
+              onSuccess={(result) => setCover(result.info)}
+            >
+              {({ open }) => {
+                return (
+                  <div className="" onClick={() => open()}>
+                    <label className="mt-4 text-lg font-bold " htmlFor="">
+                      Cover Picture
+                    </label>
+                    <div className="flex items-center gap-3 text-sm  cursor-pointe mt-4">
+                      <Image
+                        src={user.cover}
+                        alt=""
+                        width={56}
+                        height={56}
+                        className="w-14 h-14 object-cover rounded-lg"
+                      />
+                      <span className="text-gray-500 cursor-pointer">
+                        Change
+                      </span>
+                    </div>
+                  </div>
+                );
+              }}
+            </CldUploadWidget>
 
             {/* INPUTS */}
             <div className="flex flex-wrap justify-between">
@@ -138,9 +160,15 @@ export default function UpdateUser({ user }) {
               </div>
               {/*  Update Button*/}
 
-              <button className="w-full py-2 text-sm mt-7 bg-blue-500 text-white rounded-md">
-                Update
-              </button>
+              <UpdateButton />
+              {state.success && (
+                <span className="text-green-500">
+                  Profile has been Updated !
+                </span>
+              )}
+              {state.error && (
+                <span className="text-red-500">Some Thing Went Wrong </span>
+              )}
             </div>
             <span
               onClick={handleClose}

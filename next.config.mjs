@@ -14,6 +14,10 @@ const nextConfig = {
   ],
 
   images: {
+
+    loader: "default",
+    domains: ["res.cloudinary.com"],
+
     remotePatterns: [
       {
         protocol: "https",
@@ -29,7 +33,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "tt",
+        hostname: "res.cloudinary.com",
       },
     ]
   },

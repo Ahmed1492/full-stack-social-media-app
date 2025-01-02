@@ -1,6 +1,7 @@
 import prisma from "@/lib/client";
 import { auth } from "@clerk/nextjs/server";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 export default async function ProfileCart() {
@@ -16,7 +17,7 @@ export default async function ProfileCart() {
       },
     },
   });
-  console.log(user);
+  // console.log(user);
   if (!user) return null;
   return (
     <div className="bg-white shadow-lg rounded-lg p-4 text-sm flex flex-col gap-2">
@@ -35,11 +36,14 @@ export default async function ProfileCart() {
           height={48}
         />
       </div>
-      <span className="font-bold mt-4  text-lg text-center">
+      <Link
+        href={`/profile/${user?.username}`}
+        className="font-bold mt-4  text-lg text-center"
+      >
         {user.name && user.surname
           ? user.name + " " + user.surname
           : user.username}
-      </span>
+      </Link>
       <div className="flex items-center justify-center gap-3">
         {/* IMAGES */}
         <div className="flex items-center gap-1">

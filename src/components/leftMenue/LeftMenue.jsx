@@ -148,7 +148,7 @@ export default function LeftMenue({ type }) {
           <span className="font-medium">Settings</span>
         </Link>
       </div>
-      <Ads size="sm" />
+      <Ads size="sm" /> 
     </div>
   );
 }

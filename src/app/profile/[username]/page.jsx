@@ -91,7 +91,7 @@ export default async function ProfilePage({ params }) {
               </div>
             </div>
           </div>
-          <Feed />
+          <Feed username={user?.username} />
         </div>
       </div>
       <div className="hidden lg:block w-[30%]">
