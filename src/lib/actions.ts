@@ -175,3 +175,57 @@ export const updateProfile = async (
     return { success: false, error: true };
   }
 };
+
+export const switchLike = async (postId: number) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("you Are Not Authenticateted");
+
+  try {
+    // Check if liked post Before
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        userId,
+        postId,
+      },
+    });
+    if (existingLike) {
+      await prisma.like.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+    } else {
+      await prisma.like.create({
+        data: {
+          postId,
+          userId,
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error("Some Thing Wnt Wrong");
+  }
+};
+
+export const addComment = async (postId: number, description: string) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("User not Authenticated");
+
+  try {
+    const createdComment = await prisma.comment.create({
+      data: {
+        description,
+        userId,
+        postId,
+      },
+      include: {
+        user: true,
+      },
+    });
+    return createdComment;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Some Thing Went Wrong");
+  }
+};

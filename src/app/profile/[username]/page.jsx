@@ -81,11 +81,11 @@ export default async function ProfilePage({ params }) {
                   <span className="text-sm">Posts</span>
                 </div>
                 <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.followings} </span>
+                  <span className="">{user._count.followers} </span>
                   <span className="text-sm">followers</span>
                 </div>
                 <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.followers} </span>
+                  <span className="">{user._count.followings} </span>
                   <span className="text-sm">following</span>
                 </div>
               </div>

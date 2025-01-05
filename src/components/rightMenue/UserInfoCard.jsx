@@ -91,10 +91,11 @@ export default async function UserInfoCard({ user }) {
           </div>
         )}
         {/*  */}
+        {user.website && 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer">
             <Image src="/link.png" alt="" width={20} height={20} />
-            <span className=" text-blue-500  font-medium">Ahmed.Dev</span>
+            <span className=" text-blue-500  font-medium">{user.website}</span>
           </div>
           <div className="flex items-center gap-2">
             <Image src="/date.png" alt="" width={20} height={20} />
@@ -104,6 +105,7 @@ export default async function UserInfoCard({ user }) {
             </span>
           </div>
         </div>
+        }
       </div>
       {currentUserId && currentUserId !== user.id && (
         <UserInfoInteractions
