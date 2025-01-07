@@ -7,14 +7,14 @@ export default async function Comments({ postId }) {
   const { userId } = auth();
   const comments = await prisma.comment.findMany({
     where: {
-      postId
+      postId,
     },
     include: {
       user: true,
     },
   });
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-8">
       <CommentList comments={comments} postId={postId} />
     </div>
   );

@@ -67,7 +67,7 @@ export default function PostInteractions({ postId, likes, commentNumber }) {
           />
           <span className="text-gray-300">|</span>
           <span className="text-gray-500">
-            123 <span className=" hidden md:inline">Comments</span>
+            {commentNumber} <span className=" hidden md:inline"> Comments</span>
           </span>
         </div>
       </div>

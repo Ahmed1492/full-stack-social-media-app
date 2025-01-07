@@ -3,6 +3,7 @@
 import { addComment } from "@/lib/actions";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
+import Link from "next/link";
 import { useOptimistic, useState } from "react";
 
 export default function CommentList({ comments, postId }) {
@@ -76,12 +77,12 @@ export default function CommentList({ comments, postId }) {
           </div>
         </form>
         {optimisticComment.map((comment) => (
-          <>
+          <div key={comment.id}>
             {/* All Comments */}
-            <div key={comment.id} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               {/* USER */}
               <div className="flex justify-between items-center">
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-3 items-center">
                   <Image
                     src={comment?.user?.avatar || "/noAvatar.png"}
                     alt=""
@@ -89,11 +90,14 @@ export default function CommentList({ comments, postId }) {
                     width={36}
                     height={36}
                   />
-                  <span className="font-medium text-slate-600">
+                  <Link
+                    href={`/profile/${comment.user.username}`}
+                    className="font-bold text-gray-900"
+                  >
                     {comment?.user?.name && comment.user.surname
                       ? comment.user.name + " " + comment.user.surname
                       : comment.user.username}
-                  </span>
+                  </Link>
                 </div>
                 <Image
                   src="/more.png"
@@ -104,7 +108,9 @@ export default function CommentList({ comments, postId }) {
                 />
               </div>
               {/* Comment */}
-              <p className="text-slate-900">{comment.description}</p>
+              <p className="text-slate-700 ms-9 font-medium">
+                {comment.description}
+              </p>
               <div className="flex items-center gap-5 text-sm">
                 <Image
                   src="/like.png"
@@ -115,12 +121,12 @@ export default function CommentList({ comments, postId }) {
                 />
                 <span className="text-gray-300 ">|</span>
                 <div className="flex items-center gap-5">
-                  <span className="text-gray-500 font-medium">123 Likes</span>
+                  <span className="text-gray-500 font-medium">0 Likes</span>
                   <span className="text-gray-500 font-medium">Replay</span>
                 </div>
               </div>
             </div>
-          </>
+          </div>
         ))}
       </>
     );

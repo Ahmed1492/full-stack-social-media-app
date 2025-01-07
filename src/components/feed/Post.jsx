@@ -2,6 +2,7 @@ import Image from "next/image";
 import React from "react";
 import Comments from "@/components/feed/Comments";
 import PostInteractions from "@/components/feed/PostInteractions";
+import Link from "next/link";
 export default function Post({ post }) {
   console.log(">>>>", post, "<<<<");
 
@@ -17,11 +18,14 @@ export default function Post({ post }) {
             width={40}
             height={40}
           />
-          <span className="text-slate-700 font-medium">
+          <Link
+            href={`/profile/${post.user.username}`}
+            className="text-slate-700 font-medium"
+          >
             {post.user.name && post.user.surname
               ? post.user.name + " " + post.user.surname
               : post.user.username}
-          </span>
+          </Link>
         </div>
         <Image
           src="/more.png"

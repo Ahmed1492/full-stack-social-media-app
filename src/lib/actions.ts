@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "./client";
 import { object, z } from "zod";
+import { revalidatePath } from "next/cache";
 
 export const switchFollow = async (userId: string) => {
   const { userId: currentUser } = auth();
@@ -227,5 +228,30 @@ export const addComment = async (postId: number, description: string) => {
   } catch (error) {
     console.log(error);
     throw new Error("Some Thing Went Wrong");
+  }
+};
+
+export const addPost = async (formData: FormData, img: string) => {
+  const desc = formData.get("desc") as string;
+  const Desc = z.string().min(1).max(255);
+  const validatedDesc = Desc.safeParse(desc);
+  const { userId } = auth();
+  if (!userId) throw new Error("You Are Not Authanticated");
+
+  if (!validatedDesc.success) {
+    return "description is not valid  ";
+  }
+  try {
+    await prisma.post.create({
+      data: {
+        description: validatedDesc.data,
+        userId,
+        img,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    console.log(error);
+    throw new Error("some thing went wrong!");
   }
 };
