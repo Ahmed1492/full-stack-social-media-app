@@ -27,21 +27,23 @@ export default async function UserMediaCard({ user }) {
         <span className="font-medium text-blue-400">See All</span>
       </div>
       {/* IMAGES */}
-      <div className="flex  gap-3 mt-4 flex-wrap">
+      <div className="flex gap-3 mt-4 flex-wrap">
         {userMediaRes.length ? (
-          userMediaRes.map((post) => (
-            <Image
-              key={post.id}
-              src={post.img}
-              alt=""
-              className="w-20 h-32 rounded-lg object-cover"
-              width={80}
-              height={128}
-            />
-          ))
+          userMediaRes.map((post) =>
+            post.img ? (
+              <Image
+                key={post.id}
+                src={post.img}
+                alt=""
+                className="w-20 h-32 rounded-lg object-cover"
+                width={80}
+                height={128}
+              />
+            ) : null
+          )
         ) : (
           <p className="text-center m-auto font-medium text-gray-600">
-            No Media Found !
+            No Media Found!
           </p>
         )}
       </div>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 export default function LeftMenue({ type }) {
   return (
-    <div className=" flex flex-col gap-6 ">
+    <div className=" flex flex-col gap-6  ">
       {type == "home" && <ProfileCart />}
       <div className="bg-white shadow-lg rounded-lg p-4 text-sm text-gray-500 flex flex-col gap-2">
         <Link
@@ -148,7 +148,7 @@ export default function LeftMenue({ type }) {
           <span className="font-medium">Settings</span>
         </Link>
       </div>
-      <Ads size="sm" /> 
+      <Ads size="sm" />
     </div>
   );
 }

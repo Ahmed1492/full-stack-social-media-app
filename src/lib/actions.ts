@@ -255,3 +255,25 @@ export const addPost = async (formData: FormData, img: string) => {
     throw new Error("some thing went wrong!");
   }
 };
+
+export const addStory = async (img: string) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("You Are Not Authanticated");
+
+  try {
+    const createdStory = await prisma.story.create({
+      data: {
+        userId,
+        img,
+        expirseAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+      include: {
+        user: true,
+      },
+    });
+    return createdStory;
+  } catch (error) {
+    console.log(error);
+    throw new Error("some thing went wrong!");
+  }
+};

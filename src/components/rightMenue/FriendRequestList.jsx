@@ -1,6 +1,7 @@
 "use client";
 import { acceptFollowRequest, rejectFollowRequest } from "@/lib/actions";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useOptimistic, useState } from "react";
 
 export default function FriendRequestList({ requests }) {
@@ -43,11 +44,14 @@ export default function FriendRequestList({ requests }) {
               width={36}
               height={36}
             />
-            <span className="font-bold text-gray-800 ">
+            <Link
+              href={`/profile/${req.sender.username}`}
+              className="font-bold text-gray-800 "
+            >
               {req.sender.name && req.sender.surname
                 ? req.sender.name + " " + req.sender.surname
                 : req.sender.username}
-            </span>
+            </Link>
           </div>
           {/* RIGHT */}
           <div className="flex items-center gap-2">

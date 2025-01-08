@@ -21,9 +21,6 @@ export default function PostInteractions({ postId, likes, commentNumber }) {
     }
   );
   const likeAction = async () => {
-    console.log(
-      "====================================================================="
-    );
 
     switchOptimisticLike();
     try {

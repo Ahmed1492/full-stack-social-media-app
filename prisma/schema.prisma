@@ -113,7 +113,6 @@ model Story{
   createdAt DateTime @default(now())
   expirseAt DateTime
   user User @relation(fields: [userId] , references: [id], onDelete: Cascade)
-  userId String @unique
-
+  userId String 
 
 }
