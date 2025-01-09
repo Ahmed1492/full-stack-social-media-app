@@ -4,58 +4,58 @@ This repository contains a full-stack social media application built using Next.
 
 
 
-## Features
+# Features
  
-# User Authentication and Profiles:
+## User Authentication and Profiles:
 - Secure user authentication with Clerk.js.
 - Editable user profiles, including fields like name, avatar, cover, description, and city.
 
 
-# Social Interactions:
+## Social Interactions:
 - Follow/unfollow users and manage follow requests.
 - Block and unblock users.
 - View and respond to follow requests.
 
 
-# Content Sharing:
+## Content Sharing:
 - Create posts with optional images.
 - Add comments to posts.
 - Like/unlike posts and comments.
 
-# Stories Feature:
+## Stories Feature:
 - Upload temporary stories that expire after 24 hours.
 
-# Efficient Rendering:
+## Efficient Rendering:
 - Use Suspense for better rendering of asynchronous components.
 - Reactively update UI with useOptimistic hook for a smooth user experience.
 - Enhance form handling with useFormStatus hook for managing submission states.
 - Use server actions to process interactions like posting, liking, commenting, and following directly on the server for optimized performance.
 
   
-##  Demo
+#  Demo
 
 
-## Technologies Used
+# Technologies Used
 
-# Front-End:
+## Front-End:
  -  Next.js  with App Router for server actions and dynamic routing.
  -  React for building a responsive user interface and use react fetures like hooks in client side and handle intreractions .
 
 
-# Back-End:
+## Back-End:
 - Prisma ORM for interacting with a MySQL database.
 - Server-side data fetching and actions for efficient performance.
 
 
-# Database:
+## Database:
  - MySQL as the relational database.
 
 
-# Validation:
+## Validation:
  - Zod for input validation to ensure data integrity.
 
 
-# Additional Tools:
+## Additional Tools:
 - svix webhook service library for managing webhooks in an application
 - Clerk.js for authentication.
 - Tailwind CSS for styling.
