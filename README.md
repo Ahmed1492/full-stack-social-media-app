@@ -39,7 +39,7 @@ This repository contains a full-stack social media application built using Next.
 
 ### Front-End:
  -  Next.js  with App Router for server actions and dynamic routing.
- -  React for building a responsive user interface and use react fetures like hooks in client side and handle intreractions .
+ -  React for building a responsive user interface and use react features like hooks in client side and handle intreractions .
 
 
 ### Back-End:
