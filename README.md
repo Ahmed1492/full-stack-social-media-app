@@ -72,7 +72,7 @@ This repository contains a full-stack social media application built using Next.
 2. Set up your .env file with the required DATABASE_URL and Clerk credentials
  
 3. Run database migrations using Prisma:
-bash:
+
     ```bash
    npx prisma migrate dev
     ```
