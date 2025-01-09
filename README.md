@@ -38,8 +38,8 @@ This repository contains a full-stack social media application built using Next.
 ## Technologies Used
 
 - Front-End:
-      Next.js 13 with App Router for server actions and dynamic routing.
-      React for building a responsive user interface.
+      Next.js  with App Router for server actions and dynamic routing.
+      React for building a responsive user interface and use react fetures like hooks in client side .
 
 
 - Back-End:
@@ -56,6 +56,7 @@ This repository contains a full-stack social media application built using Next.
 
 
 - Additional Tools:
+      svix webhook service library for managing webhooks in an application
       Clerk.js for authentication.
       Tailwind CSS for styling.
       React Suspense, useOptimistic hook,
