@@ -1,12 +1,14 @@
 # Full Stack Social Media App Using Nextjs
-This repository contains a full-stack social media application built using Next.js, Prisma, and MySQL. The app provides a seamless user experience for connecting with others, sharing content, and interacting in a dynamic social media environment. It incorporates server actions for improved performance and scalability.
+This repository contains a full-stack social media application built using Next.js, Prisma, and MySQL. The app offers a modern and dynamic user experience, enabling seamless interaction through features like posts, likes, comments, and social connections. It leverages server actions for enhanced performance and scalability.
+
+
 
 
 ## Features
  
 - User Authentication and Profiles:
       Secure user authentication with Clerk.js.
-      Editable user profiles, including fields like name, avatar, cover, description, city, and more.
+     Editable user profiles, including fields like name, avatar, cover, description, and city.
 
 
 - Social Interactions:
