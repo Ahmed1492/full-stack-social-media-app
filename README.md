@@ -1,5 +1,5 @@
-# Clothing eCommerce App
-This repository contains the codebase for a full-stack social media application built using Next.js, Prisma, and MySQL. The app provides a seamless user experience for connecting with others, sharing content, and interacting in a dynamic social media environment. It incorporates server actions for improved performance and scalability.
+# Full Stack Social Media App Using Nextjs
+This repository contains a full-stack social media application built using Next.js, Prisma, and MySQL. The app provides a seamless user experience for connecting with others, sharing content, and interacting in a dynamic social media environment. It incorporates server actions for improved performance and scalability.
 
 
 ## Features
