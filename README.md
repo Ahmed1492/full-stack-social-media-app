@@ -25,7 +25,13 @@ This repository contains a full-stack social media application built using Next.
 - Stories Feature:
       Upload temporary stories that expire after 24 hours.
 
+- Efficient Rendering:
+    Use Suspense for better rendering of asynchronous components.
+    Reactively update UI with useOptimistic hook for a smooth user experience.
+    Enhance form handling with useFormStatus hook for managing submission states.
+    Use server actions to process interactions like posting, liking, commenting, and following directly on the server for optimized performance.
 
+  
 ##  Demo
 
 
@@ -52,7 +58,8 @@ This repository contains a full-stack social media application built using Next.
 - Additional Tools:
       Clerk.js for authentication.
       Tailwind CSS for styling.
-
+      React Suspense, useOptimistic hook,
+      and useFormStatus hook for advanced client-side interactions.
 
 
 ## Installation
