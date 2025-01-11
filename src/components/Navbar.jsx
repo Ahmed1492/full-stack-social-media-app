@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import MobileMenue from "@/components/MobileMenue";
+import SearchUsers from "@/components/SearchUsers";
 import Image from "next/image";
 import {
   ClerkLoaded,
@@ -50,20 +51,7 @@ export default function Navbar() {
           </Link>
         </div>
         {/* Search Input */}
-        <div className=" hidden xl:flex items-center relative">
-          <input
-            className="outline-none py-2 px-2 rounded-xl bg-gray-100"
-            placeholder="Search .."
-            type="text"
-          />
-          <Image
-            src="/search.png"
-            alt="search"
-            width={14}
-            height={14}
-            className="absolute right-2 top-2"
-          />
-        </div>
+        <SearchUsers />
       </div>
       {/* RIGHT */}
       <div className="w-[30%]  flex items-center justify-end gap-4 xl:gap-8">

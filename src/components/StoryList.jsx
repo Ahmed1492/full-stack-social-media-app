@@ -4,12 +4,13 @@ import { useUser } from "@clerk/nextjs";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import React, { useOptimistic, useState } from "react";
-
+import OpenedStory from "@/components/OpenedStory";
 export default function StoryList({ stories, userId }) {
   const { user } = useUser();
   const [storyList, setStoryList] = useState(stories);
   const [img, setImg] = useState("");
   const { isLoaded } = useUser();
+  const [openStory, setOpenStroy] = useState(null);
   const [optimisticStory, addOptimisticStory] = useOptimistic(
     storyList,
     (state, value) => [value, ...state]
@@ -47,6 +48,9 @@ export default function StoryList({ stories, userId }) {
       console.log(error);
     }
   };
+  const handleOpenStory = (story) => {
+    setOpenStroy(story);
+  };
   return (
     <>
       <CldUploadWidget
@@ -65,7 +69,7 @@ export default function StoryList({ stories, userId }) {
                 width={80}
                 height={80}
                 className="w-20 h-20 rounded-full ring-2 object-cover"
-                onClick={() => open()}
+                onClick={open ? () => open() : console.log("Not Allowed")}
               />
               {img ? (
                 <form action={add}>
@@ -83,11 +87,13 @@ export default function StoryList({ stories, userId }) {
           );
         }}
       </CldUploadWidget>
+      {openStory && <OpenedStory setOpenStroy={setOpenStroy} openStory={openStory} />}
+
       {optimisticStory.map((story) => (
         <div
           key={story.id}
           className="flex flex-col items-center gap-2 cursor-pointer"
-          onClick={() => console.log(story.img)}
+          onClick={() => handleOpenStory(story)}
         >
           <Image
             src={story.img || "/noAvatar.png"}

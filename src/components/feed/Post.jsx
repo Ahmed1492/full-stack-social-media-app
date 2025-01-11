@@ -1,11 +1,12 @@
 import Image from "next/image";
-import React from "react";
+import React, { Suspense } from "react";
 import Comments from "@/components/feed/Comments";
+import PostInfo from "@/components/feed/PostInfo";
 import PostInteractions from "@/components/feed/PostInteractions";
 import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
 export default function Post({ post }) {
-  console.log(">>>>", post, "<<<<");
-
+  const { userId } = auth();
   return (
     <div className="flex flex-col gap-3">
       {/* USER */}
@@ -27,13 +28,7 @@ export default function Post({ post }) {
               : post.user.username}
           </Link>
         </div>
-        <Image
-          src="/more.png"
-          className="cursor-pointer"
-          width={18}
-          height={18}
-          alt=""
-        />
+        {userId === post.user.id && <PostInfo postId={post.id} />}
       </div>
       {/* DESC */}
       <div className="flex flex-col gap-4">
@@ -50,13 +45,17 @@ export default function Post({ post }) {
         <p className=" text-slate-700 font-medium">{post?.description}</p>
       </div>
       {/* INTERACTION */}
-      <PostInteractions
-        postId={post.id}
-        likes={post.likes.map((like) => like.userId)}
-        commentNumber={post._count.comments}
-      />
+      <Suspense fallback="Loading...">
+        <PostInteractions
+          postId={post.id}
+          likes={post.likes.map((like) => like.userId)}
+          commentNumber={post._count.comments}
+        />
+      </Suspense>
       {/* Comments */}
-      <Comments postId={post.id} />
+      <Suspense fallback="Loading...">
+        <Comments postId={post.id} />
+      </Suspense>
     </div>
   );
 }

@@ -1,15 +1,17 @@
 "use client";
 
-import { addComment } from "@/lib/actions";
+import { addComment, deleteComment } from "@/lib/actions";
 import { useUser } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { useOptimistic, useState } from "react";
+import CommentInfo from "@/components/feed/CommentInfo";
 
 export default function CommentList({ comments, postId }) {
   const { user } = useUser();
   const [commentState, setCommentState] = useState(comments);
   const [desc, setDesc] = useState("");
+  const [isDeleteComment, setIsDeleteComment] = useState(false);
   const [optimisticComment, addOptimisticComment] = useOptimistic(
     commentState,
     (state, value) => [value, ...state]
@@ -45,6 +47,11 @@ export default function CommentList({ comments, postId }) {
       console.log(error);
     }
   };
+  const handleDelete = async (comment) => {
+    // await deleteComment(comment.id, comment.postId);
+    console.log("commentnew", comment);
+  };
+
   if (user)
     return (
       <>
@@ -99,13 +106,13 @@ export default function CommentList({ comments, postId }) {
                       : comment.user.username}
                   </Link>
                 </div>
-                <Image
-                  src="/more.png"
-                  className="cursor-pointer"
-                  width={18}
-                  height={18}
-                  alt=""
-                />
+                {user?.id === comment.userId && (
+                  <CommentInfo
+                    setIsDeleteComment={setIsDeleteComment}
+                    postId={comment.postId}
+                    id={comment.id}
+                  />
+                )}
               </div>
               {/* Comment */}
               <p className="text-slate-700 ms-9 font-medium">

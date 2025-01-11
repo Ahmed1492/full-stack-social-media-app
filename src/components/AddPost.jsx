@@ -57,7 +57,7 @@ export default function AddPost() {
             {({ open }) => {
               return (
                 <div
-                  onClick={() => open()}
+                  onClick={open ? () => open() : console.log("not Allowed")}
                   className="flex items-center gap-2 mt-5 cursor-pointer"
                 >
                   <Image

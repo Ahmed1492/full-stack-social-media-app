@@ -12,6 +12,7 @@
     "@clerk/nextjs": "^5.7.5",
     "@prisma/client": "^6.1.0",
     "babel-plugin-react-compiler": "^0.0.0-experimental-938cd9a-20240601",
+    "lodash.debounce": "^4.0.8",
     "next": "15.0.0-rc.0",
     "next-cloudinary": "^6.16.0",
     "prisma": "^6.1.0",

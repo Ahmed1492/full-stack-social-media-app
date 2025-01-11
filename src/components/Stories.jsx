@@ -49,8 +49,6 @@ export default async function Stories() {
     },
   });
 
-  console.log("followingsId mm >> ", followingsId);
-
   return (
     <div className="p-4 bg-white rounded-lg shadow-md overflow-scroll text-sm scrollbar-hidden">
       <div className="flex gap-8 w-max">

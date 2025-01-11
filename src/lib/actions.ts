@@ -259,7 +259,6 @@ export const addPost = async (formData: FormData, img: string) => {
 export const addStory = async (img: string) => {
   const { userId } = auth();
   if (!userId) throw new Error("You Are Not Authanticated");
-
   try {
     const createdStory = await prisma.story.create({
       data: {
@@ -275,5 +274,77 @@ export const addStory = async (img: string) => {
   } catch (error) {
     console.log(error);
     throw new Error("some thing went wrong!");
+  }
+};
+
+export const deletePost = async (postId: number) => {
+  const { userId: currentUser } = auth();
+  if (!currentUser) throw new Error("User not Authenticated");
+  try {
+    await prisma.post.delete({
+      where: {
+        userId: currentUser,
+        id: postId,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    console.log(error);
+    throw new Error("Some Thing Went Wrong");
+  }
+};
+
+export const deleteComment = async (commentId: number, postId: number) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("User not Authenticated");
+  try {
+    await prisma.comment.delete({
+      where: {
+        id: commentId,
+        postId,
+        userId,
+      },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    console.log(error);
+    throw new Error("Some Thing Went Wrong");
+  }
+};
+
+
+
+
+
+export const searchUsers = async (query: string) => {
+  // Validate query with zod
+  const QuerySchema = z.string().min(1).max(50); // Query must be between 1 and 50 characters
+
+  const validatedQuery = QuerySchema.safeParse(query);
+
+  if (!validatedQuery.success) {
+    throw new Error("Invalid query string"); // Throw error if validation fails
+  }
+
+  try {
+    // Query the Prisma database
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          contains: validatedQuery.data,
+        },
+      },
+      select: {
+        id: true,
+        username: true,
+        avatar: true,
+        name: true,
+      },
+    });
+
+    return users; // Return matched users
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Something went wrong while fetching users!");
   }
 };

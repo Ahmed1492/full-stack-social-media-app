@@ -13,6 +13,8 @@ export default async function Comments({ postId }) {
       user: true,
     },
   });
+
+
   return (
     <div className="flex flex-col gap-8">
       <CommentList comments={comments} postId={postId} />
