@@ -12,11 +12,11 @@ export default function OpenedStory({ openStory, setOpenStroy }) {
           src={openStory?.img}
           alt="openStory"
           fill
-          className="object-cover ring-2 ring-white rounded-md"
+          className="object-cover ring-2 ring-black rounded-md"
         />
         <span
           onClick={() => setOpenStroy(null)}
-          className="text-whiete border  border-black px-2 py-1 cursor-pointer  text-lg absolute right-1 top-1 "
+          className="font-bold border-2 rounded-md  border-black px-2 py-1 cursor-pointer  text-lg absolute right-1 top-1 "
         >
           X
         </span>
