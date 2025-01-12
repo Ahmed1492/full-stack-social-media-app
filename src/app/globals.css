@@ -13,3 +13,6 @@
 .scrollbar-hidden {
   scrollbar-width: none;
 }
+nextjs-portal {
+  display: none !important;
+}

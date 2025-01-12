@@ -20,6 +20,8 @@ export default function UpdateUser({ user }) {
     state.success && router.refresh();
   };
 
+  if (!user) return;
+
   return (
     <div className="">
       <span
@@ -47,17 +49,20 @@ export default function UpdateUser({ user }) {
             {/* Change Image  Using Cloudinary*/}
             <CldUploadWidget
               uploadPreset="social"
-              onSuccess={(result) => setCover(result.info)}
+              onSuccess={(result) => setCover(result?.info)}
             >
               {({ open }) => {
                 return (
-                  <div className="" onClick={() => open()}>
+                  <div
+                    className=""
+                    onClick={open ? () => open() : console.log("notValid")}
+                  >
                     <label className="mt-4 text-lg font-bold " htmlFor="">
                       Cover Picture
                     </label>
                     <div className="flex items-center gap-3 text-sm  cursor-pointe mt-4">
                       <Image
-                        src={user.cover}
+                        src={user?.cover}
                         alt=""
                         width={56}
                         height={56}

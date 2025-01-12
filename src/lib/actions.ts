@@ -312,14 +312,9 @@ export const deleteComment = async (commentId: number, postId: number) => {
   }
 };
 
-
-
-
-
 export const searchUsers = async (query: string) => {
   // Validate query with zod
   const QuerySchema = z.string().min(1).max(50); // Query must be between 1 and 50 characters
-
   const validatedQuery = QuerySchema.safeParse(query);
 
   if (!validatedQuery.success) {
@@ -327,11 +322,11 @@ export const searchUsers = async (query: string) => {
   }
 
   try {
-    // Query the Prisma database
+    // Query the Prisma database for usernames before "_"
     const users = await prisma.user.findMany({
       where: {
         username: {
-          contains: validatedQuery.data,
+          contains: validatedQuery.data, // Match the query as a substring
         },
       },
       select: {
@@ -342,7 +337,13 @@ export const searchUsers = async (query: string) => {
       },
     });
 
-    return users; // Return matched users
+    // Filter results: Only match portion of username before "_"
+    const filteredUsers = users.filter((user) => {
+      const usernameBeforeUnderscore = user.username.split("_")[0]; // Extract part before "_"
+      return usernameBeforeUnderscore.includes(validatedQuery.data); // Check match
+    });
+
+    return filteredUsers; // Return filtered users
   } catch (error) {
     console.error("Error fetching users:", error);
     throw new Error("Something went wrong while fetching users!");

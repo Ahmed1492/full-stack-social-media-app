@@ -71,7 +71,7 @@ export default function SearchUsers() {
         )}
       </div>
       {isSearchMode && (
-        <div className="absolute bg-white p-2 shadow-lg rounded-md z-30 flex flex-col gap-5 w-60">
+        <div className="absolute bg-white p-2 shadow-lg rounded-md z-30 flex flex-col gap-5 min-w-60">
           {isLoading ? (
             <p className="text-gray-500">Loading...</p> // Loading indicator
           ) : searchResult.length > 0 ? (

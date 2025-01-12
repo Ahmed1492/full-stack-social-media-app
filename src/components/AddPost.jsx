@@ -5,13 +5,15 @@ import Image from "next/image";
 import React, { useState } from "react";
 import AddPostButton from "@/components/feed/AddPostButton";
 import { addPost } from "@/lib/actions";
+import Loading from "@/components/Loading";
+
 export default function AddPost() {
   const { user, isLoaded } = useUser();
   const [desc, setDesc] = useState("");
   const [img, setImg] = useState("");
 
   if (!isLoaded) {
-    return "Loading...";
+    return <Loading />;
   }
   return (
     <div className="p-4 bg-white shadow-md rounded-lg flex gap-8 items-center justify-between text-sm">

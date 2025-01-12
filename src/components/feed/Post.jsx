@@ -4,6 +4,7 @@ import Comments from "@/components/feed/Comments";
 import PostInfo from "@/components/feed/PostInfo";
 import PostInteractions from "@/components/feed/PostInteractions";
 import Link from "next/link";
+import Loading from "@/components/Loading";
 import { auth } from "@clerk/nextjs/server";
 export default function Post({ post }) {
   const { userId } = auth();
@@ -45,7 +46,7 @@ export default function Post({ post }) {
         <p className=" text-slate-700 font-medium">{post?.description}</p>
       </div>
       {/* INTERACTION */}
-      <Suspense fallback="Loading...">
+      <Suspense fallback={<Loading />}>
         <PostInteractions
           postId={post.id}
           likes={post.likes.map((like) => like.userId)}
@@ -53,7 +54,7 @@ export default function Post({ post }) {
         />
       </Suspense>
       {/* Comments */}
-      <Suspense fallback="Loading...">
+      <Suspense fallback={<Loading />}>
         <Comments postId={post.id} />
       </Suspense>
     </div>

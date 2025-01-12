@@ -15,7 +15,8 @@ const Homepage = () => {
         <div className="flex flex-col gap-6">
           <Stories />
           <AddPost />
-          <Feed />
+          {/* <Feed username={null} /> */}
+          <Feed  />
         </div>
       </div>
       {/* Right */}

@@ -14,7 +14,7 @@ export default function BirthDays() {
             width={36}
             height={36}
           />
-          <span className="font-bold text-gray-800 ">Lama Dev</span>
+          <span className="font-bold text-gray-800 ">Ahmed</span>
         </div>
         {/* RIGHT */}
         <div className="flex items-center gap-2">

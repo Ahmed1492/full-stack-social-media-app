@@ -41,8 +41,6 @@ export default async function ProfilePage({ params }) {
   }
   if (isBloked) return notFound();
 
-  let x = 2;
-  console.log;
   return (
     <div className="flex gap-6 pt-6">
       <div className="hidden xl:block w-[20%]">
@@ -81,11 +79,11 @@ export default async function ProfilePage({ params }) {
                   <span className="text-sm">Posts</span>
                 </div>
                 <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.followers} </span>
+                  <span className="">{user._count.followings} </span>
                   <span className="text-sm">followers</span>
                 </div>
                 <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.followings} </span>
+                  <span className="">{user._count.followers} </span>
                   <span className="text-sm">following</span>
                 </div>
               </div>
@@ -94,7 +92,7 @@ export default async function ProfilePage({ params }) {
           <Feed username={user?.username} />
         </div>
       </div>
-      <div className="hidden lg:block w-[30%]">
+      <div className="hidden lg:block w-[34%]">
         <RightMenue user={user} />
       </div>
     </div>

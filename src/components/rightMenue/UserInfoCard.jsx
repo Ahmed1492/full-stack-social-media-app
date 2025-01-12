@@ -91,21 +91,23 @@ export default async function UserInfoCard({ user }) {
           </div>
         )}
         {/*  */}
-        {user.website && 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer">
-            <Image src="/link.png" alt="" width={20} height={20} />
-            <span className=" text-blue-500  font-medium">{user.website}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Image src="/date.png" alt="" width={20} height={20} />
+        {user.website && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 cursor-pointer">
+              <Image src="/link.png" alt="" width={20} height={20} />
+              <span className=" text-blue-500  font-medium">
+                {user.website}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Image src="/date.png" alt="" width={20} height={20} />
 
-            <span className="text-gray-500 font-medium text-sm">
-              joined {formattedDate}
-            </span>
+              <span className="text-gray-500 font-medium text-sm">
+                joined {formattedDate}
+              </span>
+            </div>
           </div>
-        </div>
-        }
+        )}
       </div>
       {currentUserId && currentUserId !== user.id && (
         <UserInfoInteractions
