@@ -34,6 +34,7 @@ This repository contains a full-stack social media application built using Next.
   
 # 2. Demo
 
+- https://www.linkedin.com/posts/activity-7284177306414178305-v6gh?utm_source=share&utm_medium=member_desktop
 
 # 3. Technologies Used
 
