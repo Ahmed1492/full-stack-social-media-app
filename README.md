@@ -18,6 +18,25 @@ A full-stack social media application built with **Next.js 15**, **Prisma**, **C
 
 ---
 
+
+## 🚀 Live Demo  
+
+[![Live Demo](https://img.shields.io/badge/View%20Live-Vercel-blue?style=for-the-badge&logo=vercel)](https://full-stack-social-media-app-nu.vercel.app/)
+
+---
+
+## 🎥 Recorded Demo  
+
+[![Recorded Demo](https://img.shields.io/badge/Watch%20Demo-LinkedIn-green?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/posts/ahmed-mohamed-8a8619259_excited-to-share-my-latest-project-ugcPost-7284176430408622080-Ev9M?utm_source=share&utm_medium=member_desktop&rcm=ACoAAD-hKsAB1QXZ1eSyBx8nGWP48RuYiBX5Bdg)
+
+
+
+
+---
+
+
+
+
 ## ✨ Features
 
 - **Authentication** — Sign up / sign in via Clerk (Google OAuth + email)
