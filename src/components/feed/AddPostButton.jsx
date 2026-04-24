@@ -6,16 +6,16 @@ export default function AddPostButton() {
   const { pending } = useFormStatus();
   return (
     <button
-      className="bg-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 px-4 font-medium rounded-lg"
+      className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-2 px-5 font-semibold rounded-xl text-sm transition-all duration-200 hover:shadow-md hover:shadow-blue-200 hover:scale-105 flex items-center gap-2"
       disabled={pending}
     >
       {pending ? (
-        <div className="flex items-center gap-2">
-          <span className="inline-block h-4 w-4 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"></span>
-          Sending...
-        </div>
+        <>
+          <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-solid border-current border-e-transparent" />
+          Posting...
+        </>
       ) : (
-        "Send"
+        "Post"
       )}
     </button>
   );

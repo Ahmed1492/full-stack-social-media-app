@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "build": "next build",
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint"
   },
@@ -13,11 +14,11 @@
     "@prisma/client": "^6.1.0",
     "babel-plugin-react-compiler": "^0.0.0-experimental-938cd9a-20240601",
     "lodash.debounce": "^4.0.8",
-    "next": "15.0.0-rc.0",
+    "next": "^15.3.1",
     "next-cloudinary": "^6.16.0",
     "prisma": "^6.1.0",
-    "react": "19.0.0-rc-f994737d14-20240522",
-    "react-dom": "19.0.0-rc-f994737d14-20240522",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "svix": "^1.44.0",
     "zod": "^3.24.1"
   },
@@ -25,8 +26,9 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "autoprefixer": "^10.5.0",
     "eslint": "^8",
-    "eslint-config-next": "15.0.0-rc.0",
+    "eslint-config-next": "^15.3.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"

@@ -4,7 +4,7 @@ import Image from "next/image";
 import React from "react";
 import CommentList from "@/components/feed/CommentList";
 export default async function Comments({ postId }) {
-  const { userId } = auth();
+  const { userId } = await auth();
   const comments = await prisma.comment.findMany({
     where: {
       postId,

@@ -4,48 +4,40 @@ import { deleteComment } from "@/lib/actions";
 import Image from "next/image";
 import React, { useState } from "react";
 
-export default function CommentInfo({
-  id,
-  postId,
-  onDelete,
-  setIsDeleteComment,
-}) {
+export default function CommentInfo({ id, postId, setIsDeleteComment }) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      await deleteComment(id, postId); // Call the server function
+      await deleteComment(id, postId);
       setIsDeleteComment(id);
-      if (onDelete) onDelete(id); // Notify parent to update state
     } catch (error) {
-      console.error("Failed to delete the comment:", error);
+      console.error("Failed to delete comment:", error);
     } finally {
       setIsLoading(false);
-      setIsDeleteComment(null);
       setOpen(false);
     }
   };
 
   return (
     <div className="relative">
-      <Image
+      <button
         onClick={() => setOpen(!open)}
-        src="/more.png"
-        className="cursor-pointer"
-        width={18}
-        height={18}
-        alt="More options"
-      />
+        className="p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+      >
+        <Image src="/more.png" className="cursor-pointer opacity-50 hover:opacity-100 transition-opacity" width={14} height={14} alt="" />
+      </button>
       {open && (
-        <div className="absolute top-4 right-0 p-4 w-32 rounded-lg flex flex-col gap-2 text-xs shadow-lg z-50 bg-white">
-          <span className="cursor-pointer">View</span>
-          <span className="cursor-pointer">Repost</span>
+        <div className="absolute top-7 right-0 bg-white border border-gray-100 rounded-xl shadow-lg p-1.5 w-28 flex flex-col z-50 animate-scale-in">
+          <button className="text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">View</button>
+          <button className="text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">Reply</button>
+          <hr className="border-gray-100 my-1" />
           <button
             onClick={handleDelete}
-            className="text-red-500 cursor-pointer"
-            disabled={isLoading} // Disable button while loading
+            disabled={isLoading}
+            className="text-left px-3 py-1.5 text-xs text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium disabled:opacity-50"
           >
             {isLoading ? "Deleting..." : "Delete"}
           </button>

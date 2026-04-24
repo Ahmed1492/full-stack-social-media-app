@@ -57,12 +57,18 @@ export async function POST(req: Request) {
 
   if (eventType == "user.created") {
     try {
+      const data = JSON.parse(body).data;
+      const username = data.username || 
+        data.email_addresses?.[0]?.email_address?.split("@")[0] || 
+        data.id;
       await prisma.user.create({
         data: {
           id: evt.data.id,
-          username: JSON.parse(body).data.username,
-          avatar: JSON.parse(body).data.image_url || "/noAvatar.png",
+          username,
+          avatar: data.image_url || "/noAvatar.png",
           cover: "/noCover.jpg",
+          name: data.first_name || null,
+          surname: data.last_name || null,
         },
       });
       return new Response("user has been Created Successfully ", {
@@ -75,11 +81,17 @@ export async function POST(req: Request) {
   }
   if (eventType == "user.updated") {
     try {
+      const data = JSON.parse(body).data;
+      const username = data.username || 
+        data.email_addresses?.[0]?.email_address?.split("@")[0] || 
+        data.id;
       await prisma.user.update({
         where: { id: evt.data.id },
         data: {
-          username: JSON.parse(body).data.username,
-          avatar: JSON.parse(body).data.image_url || "/noAvatar.png",
+          username,
+          avatar: data.image_url || "/noAvatar.png",
+          name: data.first_name || null,
+          surname: data.last_name || null,
         },
       });
       return new Response("user has been Updated Successfully ", {

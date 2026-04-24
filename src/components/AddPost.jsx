@@ -1,110 +1,203 @@
 "use client";
 import { useUser } from "@clerk/nextjs";
-import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import AddPostButton from "@/components/feed/AddPostButton";
 import { addPost } from "@/lib/actions";
 import Loading from "@/components/Loading";
 
+const EMOJIS = ["😀","😂","❤️","👍","🔥","😍","🎉","😢","😮","🙏","✨","💯"];
+
 export default function AddPost() {
   const { user, isLoaded } = useUser();
   const [desc, setDesc] = useState("");
-  const [img, setImg] = useState("");
+  const [img, setImg] = useState(null);
+  const [imgPreview, setImgPreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showEmojis, setShowEmojis] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileRef = useRef(null);
 
-  if (!isLoaded) {
-    return <Loading />;
-  }
+  if (!isLoaded) return <Loading />;
+
+  const uploadToCloudinary = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    setImgPreview(localUrl);
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "social");
+    try {
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: "POST", body: formData }
+      );
+      const data = await res.json();
+      setImg(data.secure_url);
+    } catch (err) {
+      console.error(err);
+      setImgPreview(null);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileChange = (e) => uploadToCloudinary(e.target.files[0]);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    uploadToCloudinary(e.dataTransfer.files[0]);
+  };
+
+  const removeImage = () => {
+    setImg(null);
+    setImgPreview(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const handleSubmit = async (formData) => {
+    await addPost(formData, img || "");
+    setImg(null);
+    setImgPreview(null);
+    setDesc("");
+  };
+
   return (
-    <div className="p-4 bg-white shadow-md rounded-lg flex gap-8 items-center justify-between text-sm">
-      {/* Avatar */}
-      <Image
-        src={user?.imageUrl || "/noAvatar.png"}
-        alt=""
-        className="w-12 h-12 rounded-full object-cover "
-        width={48}
-        height={48}
-      />
-      {/* Post */}
-      <div className="flex-1 ">
-        {/* Text Area */}
-        <form
-          action={(formData) => addPost(formData, img.secure_url || "")}
-          className="flex items-center gap-4"
-        >
-          <textarea
-            className=" flex-1 p-2 rounded-lg outline-none bg-slate-100"
-            placeholder="whats on your mind"
-            name="desc"
-            onChange={(e) => setDesc(e.target.value)}
-          ></textarea>
-          <Image
-            className="w-5 h-5 cursor-pointer self-end"
-            src="/emoji.png"
-            width={20}
-            height={20}
-            alt=""
-          />
-          <AddPostButton />
-        </form>
-        {/* Post Options */}
-        <div className="flex items-center justify-start gap-6 flex-wrap">
-          <CldUploadWidget
-            uploadPreset="social"
-            onSuccess={(result, { widget }) => {
-              setImg(result.info);
-              widget.close();
-            }}
-          >
-            {({ open }) => {
-              return (
-                <div
-                  onClick={open ? () => open() : console.log("not Allowed")}
-                  className="flex items-center gap-2 mt-5 cursor-pointer"
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">
+      <div className="flex gap-3 items-start">
+        <Image
+          src={user?.imageUrl || "/noAvatar.png"}
+          alt=""
+          className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-100 flex-shrink-0"
+          width={40}
+          height={40}
+        />
+        <div className="flex-1">
+          <form action={handleSubmit} className="flex flex-col gap-3">
+            {/* Textarea */}
+            <div className="relative">
+              <textarea
+                className="w-full p-3 pr-10 rounded-xl outline-none bg-gray-50 border border-gray-200 focus:border-blue-400 focus:bg-white transition-all duration-200 resize-none text-sm text-gray-700 placeholder-gray-400 min-h-[80px]"
+                placeholder="What's on your mind?"
+                name="desc"
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+              />
+              <div className="absolute bottom-3 right-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEmojis(!showEmojis)}
+                  className="text-lg hover:scale-110 transition-transform duration-200"
                 >
-                  <Image
-                    src="/addimage.png"
-                    alt=""
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 object-cover"
-                  />
-                  <span className="font-medium text-slate-500">Photo</span>
-                </div>
-              );
-            }}
-          </CldUploadWidget>
+                  😊
+                </button>
+                {showEmojis && (
+                  <div className="absolute bottom-8 right-0 bg-white border border-gray-100 rounded-2xl shadow-xl p-3 flex flex-wrap gap-1.5 w-52 z-50 animate-scale-in">
+                    {EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => { setDesc((d) => d + emoji); setShowEmojis(false); }}
+                        className="text-xl hover:scale-125 transition-transform duration-150 p-1 rounded-lg hover:bg-gray-50"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className="flex items-center gap-2 mt-5 cursor-pointer">
-            <Image
-              src="/addvideo.png"
-              alt=""
-              width={24}
-              height={24}
-              className="w-6 h-6 object-cover"
+            {/* Image area — preview or drop zone */}
+            {imgPreview ? (
+              <div className="relative rounded-2xl overflow-hidden border border-gray-200 animate-scale-in group">
+                <Image
+                  src={imgPreview}
+                  alt="preview"
+                  width={600}
+                  height={400}
+                  className="w-full max-h-72 object-cover"
+                />
+                {/* Uploading overlay */}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
+                    <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="text-white text-sm font-semibold">Uploading...</span>
+                  </div>
+                )}
+                {/* Ready overlay */}
+                {!isUploading && (
+                  <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                    <span>✓</span> Ready
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-red-500 text-white rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 hover:scale-110"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              /* Drop zone — only shown when no image */
+              <div
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                className={`rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-2 py-6 ${
+                  isDragging
+                    ? "border-blue-500 bg-blue-50 scale-[1.01]"
+                    : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 ${
+                  isDragging ? "bg-blue-100" : "bg-gray-100"
+                }`}>
+                  <span className="text-xl">🖼️</span>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-medium text-gray-500">
+                    {isDragging ? "Drop your image here!" : "Add a photo"}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">Click or drag & drop · PNG, JPG</p>
+                </div>
+              </div>
+            )}
+
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
             />
-            <span className="font-medium text-slate-500">Vidoe</span>
-          </div>
-          <div className="flex items-center gap-2 mt-5 cursor-pointer">
-            <Image
-              src="/poll.png"
-              alt=""
-              width={24}
-              height={24}
-              className="w-6 h-6 object-cover"
-            />
-            <span className="font-medium text-slate-500">Poll</span>
-          </div>
-          <div className="flex items-center gap-2 mt-5 cursor-pointer">
-            <Image
-              src="/addevent.png"
-              alt=""
-              width={24}
-              height={24}
-              className="w-6 h-6 object-cover"
-            />
-            <span className="font-medium text-slate-500">Event</span>
-          </div>
+
+            {/* Bottom bar */}
+            <div className="flex items-center justify-between pt-1 border-t border-gray-100">
+              <div className="flex items-center gap-1">
+                {[
+                  { src: "/addVideo.png", label: "Video" },
+                  { src: "/poll.png", label: "Poll" },
+                  { src: "/addevent.png", label: "Event" },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 hover:scale-105"
+                  >
+                    <Image src={item.src} alt="" width={16} height={16} />
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <AddPostButton />
+            </div>
+          </form>
         </div>
       </div>
     </div>

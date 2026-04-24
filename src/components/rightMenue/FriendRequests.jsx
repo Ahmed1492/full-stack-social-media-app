@@ -1,31 +1,30 @@
 import prisma from "@/lib/client";
 import { auth } from "@clerk/nextjs/server";
-import Image from "next/image";
 import FriendRequestList from "@/components/rightMenue/FriendRequestList";
+
 export default async function FriendRequests() {
-  const { userId } = auth();
+  const { userId } = await auth();
+  if (!userId) return null;
 
   const requests = await prisma.followerRequest.findMany({
-    where: {
-      receiverId: userId,
-    },
-    include: {
-      sender: true,
-    },
+    where: { receiverId: userId },
+    include: { sender: true },
   });
 
-  if (!userId) return null;
   if (requests.length === 0) return null;
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-4">
-      {/* TOP */}
-      <div className="flex items-center justify-between font-medium">
-        <span className="text-gray-600  text-sm">Friend Request</span>
-        <span className="text-blue-500  text-xs">See All</span>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 animate-slide-in-right">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-gray-900 text-sm">Friend Requests</span>
+          <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-bounce-in">
+            {requests.length}
+          </span>
+        </div>
+        <span className="text-xs font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">See All</span>
       </div>
-      {/* All REQUESTS */}
-      <div className="flex flex-col gap-4 mt-5">
+      <div className="flex flex-col gap-3">
         <FriendRequestList requests={requests} />
       </div>
     </div>

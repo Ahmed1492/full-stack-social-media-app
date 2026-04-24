@@ -7,93 +7,99 @@ import prisma from "@/lib/client";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage({ params }) {
-  const { username } = params;
+  const { username } = await params;
 
   const user = await prisma.user.findFirst({
-    where: {
-      username: username,
-    },
+    where: { username },
     include: {
       _count: {
-        select: {
-          followers: true,
-          followings: true,
-          posts: true,
-        },
+        select: { followers: true, followings: true, posts: true },
       },
     },
   });
-  // console.log(user);
+
   if (!user) return notFound();
 
-  const { userId: currentUserId } = auth();
-  let isBloked;
+  const { userId: currentUserId } = await auth();
   if (currentUserId) {
     const res = await prisma.block.findFirst({
-      where: {
-        blockerId: user.id,
-        blockedId: currentUserId,
-      },
+      where: { blockerId: user.id, blockedId: currentUserId },
     });
-    if (res) isBloked = true;
-    else isBloked = false;
+    if (res) return notFound();
   }
-  if (isBloked) return notFound();
 
   return (
     <div className="flex gap-6 pt-6">
       <div className="hidden xl:block w-[20%]">
-        <LeftMenue />
+        <div className="sticky top-20">
+          <LeftMenue />
+        </div>
       </div>
+
       <div className="w-full lg:w-[70%] xl:w-[50%]">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-5 items-center">
-            {/* BG IMAGE */}
-            <div className="w-full min-h-56 relative">
+          {/* Profile Header */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
+            {/* Cover */}
+            <div className="w-full h-48 relative">
               <Image
                 src={user.cover || "/noCover.jpg"}
                 alt=""
                 fill
-                className="object-cover rounded-md"
+                className="object-cover"
               />
-              <Image
-                src={user.avatar || "/noAvatar.png"}
-                alt=""
-                width={80}
-                height={80}
-                className="object-cover w-20 h-20 ring-2 ring-white absolute rounded-full left-0 right-0 m-auto -bottom-10"
-              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
-            {/* DESC */}
-            <div className="flex flex-col items-center justify-center mt-7 mb-5 gap-4">
-              <span className=" text-2xl font-medium ">
-                {" "}
-                {user.name && user.surname
-                  ? user.name + " " + user.surname
-                  : user.username}
-              </span>
-              <div className="flex gap-9">
-                <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.posts} </span>
-                  <span className="text-sm">Posts</span>
+
+            {/* Avatar + Info */}
+            <div className="px-6 pb-6">
+              <div className="flex items-end justify-between -mt-10 mb-4">
+                <div className="relative">
+                  <Image
+                    src={user.avatar || "/noAvatar.png"}
+                    alt=""
+                    width={80}
+                    height={80}
+                    className="w-20 h-20 rounded-full object-cover ring-4 ring-white shadow-lg"
+                  />
+                  <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
                 </div>
-                <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.followings} </span>
-                  <span className="text-sm">followers</span>
-                </div>
-                <div className="font-medium  text-gray-800 flex flex-col items-center justify-center">
-                  <span className="">{user._count.followers} </span>
-                  <span className="text-sm">following</span>
-                </div>
+              </div>
+
+              <div className="flex flex-col gap-1 mb-4">
+                <h1 className="text-xl font-bold text-gray-900">
+                  {user.name && user.surname ? user.name + " " + user.surname : user.username}
+                </h1>
+                <p className="text-sm text-gray-400">@{user.username}</p>
+              </div>
+
+              {/* Stats */}
+              <div className="flex gap-6 pt-4 border-t border-gray-100">
+                {[
+                  { label: "Posts", value: user._count.posts },
+                  { label: "Followers", value: user._count.followers },
+                  { label: "Following", value: user._count.followings },
+                ].map((stat) => (
+                  <div key={stat.label} className="flex flex-col items-center gap-0.5">
+                    <span className="font-bold text-gray-900 text-lg">{stat.value}</span>
+                    <span className="text-xs text-gray-400 font-medium">{stat.label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
+
           <Feed username={user?.username} />
         </div>
       </div>
+
       <div className="hidden lg:block w-[34%]">
-        <RightMenue user={user} />
+        <div className="sticky top-20">
+          <RightMenue user={user} />
+        </div>
       </div>
     </div>
   );

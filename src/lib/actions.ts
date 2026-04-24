@@ -5,8 +5,36 @@ import prisma from "./client";
 import { object, z } from "zod";
 import { revalidatePath } from "next/cache";
 
+export const syncUser = async () => {
+  const { userId } = await auth();
+  if (!userId) return;
+  const { currentUser } = await import("@clerk/nextjs/server");
+  const clerkUser = await currentUser();
+  if (!clerkUser) return;
+  const username =
+    clerkUser.username ||
+    clerkUser.emailAddresses?.[0]?.emailAddress?.split("@")[0] ||
+    userId;
+  await prisma.user.upsert({
+    where: { id: userId },
+    update: {
+      avatar: clerkUser.imageUrl || "/noAvatar.png",
+      name: clerkUser.firstName || null,
+      surname: clerkUser.lastName || null,
+    },
+    create: {
+      id: userId,
+      username,
+      avatar: clerkUser.imageUrl || "/noAvatar.png",
+      cover: "/noCover.jpg",
+      name: clerkUser.firstName || null,
+      surname: clerkUser.lastName || null,
+    },
+  });
+};
+
 export const switchFollow = async (userId: string) => {
-  const { userId: currentUser } = auth();
+  const { userId: currentUser } = await auth();
   if (!currentUser) throw new Error("User not Authenticated");
 
   try {
@@ -52,7 +80,7 @@ export const switchFollow = async (userId: string) => {
 };
 
 export const switchBlock = async (userId: string) => {
-  const { userId: currentUserId } = auth();
+  const { userId: currentUserId } = await auth();
   if (!currentUserId) throw new Error("User Is Not Authenticated");
   try {
     const existingBlock = await prisma.block.findFirst({
@@ -82,7 +110,7 @@ export const switchBlock = async (userId: string) => {
 };
 
 export const acceptFollowRequest = async (userId: string) => {
-  const { userId: currentUser } = auth();
+  const { userId: currentUser } = await auth();
   if (!currentUser) throw new Error("You Are Not Authenticated");
   try {
     const existingFollowReques = await prisma.followerRequest.findFirst({
@@ -112,7 +140,7 @@ export const acceptFollowRequest = async (userId: string) => {
 };
 
 export const rejectFollowRequest = async (userId: string) => {
-  const { userId: currentUser } = auth();
+  const { userId: currentUser } = await auth();
   if (!currentUser) throw new Error("You Are Not Authenticated");
   try {
     const existingFollowReques = await prisma.followerRequest.findFirst({
@@ -162,7 +190,7 @@ export const updateProfile = async (
     return { success: false, error: true };
   }
   try {
-    const { userId: currentUser } = auth();
+    const { userId: currentUser } = await auth();
     if (!currentUser) return { success: false, error: true };
     await prisma.user.update({
       where: {
@@ -178,7 +206,7 @@ export const updateProfile = async (
 };
 
 export const switchLike = async (postId: number) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("you Are Not Authenticateted");
 
   try {
@@ -210,7 +238,7 @@ export const switchLike = async (postId: number) => {
 };
 
 export const addComment = async (postId: number, description: string) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("User not Authenticated");
 
   try {
@@ -235,13 +263,14 @@ export const addPost = async (formData: FormData, img: string) => {
   const desc = formData.get("desc") as string;
   const Desc = z.string().min(1).max(255);
   const validatedDesc = Desc.safeParse(desc);
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("You Are Not Authanticated");
 
   if (!validatedDesc.success) {
     return "description is not valid  ";
   }
   try {
+    console.log("addPost userId:", userId);
     await prisma.post.create({
       data: {
         description: validatedDesc.data,
@@ -251,13 +280,13 @@ export const addPost = async (formData: FormData, img: string) => {
     });
     revalidatePath("/");
   } catch (error) {
-    console.log(error);
-    throw new Error("some thing went wrong!");
+    console.error("addPost error:", JSON.stringify(error, null, 2));
+    throw new Error(error instanceof Error ? error.message : String(error));
   }
 };
 
 export const addStory = async (img: string) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("You Are Not Authanticated");
   try {
     const createdStory = await prisma.story.create({
@@ -278,7 +307,7 @@ export const addStory = async (img: string) => {
 };
 
 export const deletePost = async (postId: number) => {
-  const { userId: currentUser } = auth();
+  const { userId: currentUser } = await auth();
   if (!currentUser) throw new Error("User not Authenticated");
   try {
     await prisma.post.delete({
@@ -295,7 +324,7 @@ export const deletePost = async (postId: number) => {
 };
 
 export const deleteComment = async (commentId: number, postId: number) => {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) throw new Error("User not Authenticated");
   try {
     await prisma.comment.delete({

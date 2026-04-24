@@ -1,52 +1,27 @@
 import prisma from "@/lib/client";
 import { auth } from "@clerk/nextjs/server";
-import Image from "next/image";
 import React from "react";
+import MediaGrid from "@/components/rightMenue/MediaGrid";
 
 export default async function UserMediaCard({ user }) {
-  const { userId: currentUser } = auth();
-  if (!currentUser) throw new Error("you Are Not Authenticated");
-  const userMediaRes = await prisma.post.findMany({
-    where: {
-      userId: user.id,
-      img: {
-        not: null,
-      },
-    },
-    take: 8,
-    orderBy: {
-      createdAt: "desc",
-    },
+  const { userId: currentUser } = await auth();
+  if (!currentUser) return null;
+
+  const posts = await prisma.post.findMany({
+    where: { userId: user.id, img: { not: null } },
+    take: 9,
+    orderBy: { createdAt: "desc" },
   });
-  // console.log(":: > >>", userMediaRes);
 
   return (
-    <div className="p-4 bg-white shadow-md rounded-lg">
-      <div className="flex items-center justify-between">
-        <span className="font-medium text-gray-500">User Media</span>
-        <span className="font-medium text-blue-400">See All</span>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 animate-slide-in-right">
+      <div className="flex items-center justify-between mb-4">
+        <span className="font-bold text-gray-900 text-sm">Media</span>
+        <span className="text-xs font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">
+          {posts.length} photos
+        </span>
       </div>
-      {/* IMAGES */}
-      <div className="flex gap-3 mt-4 flex-wrap">
-        {userMediaRes.length ? (
-          userMediaRes.map((post) =>
-            post.img ? (
-              <Image
-                key={post.id}
-                src={post.img}
-                alt=""
-                className="w-20 h-32 rounded-lg object-cover"
-                width={80}
-                height={128}
-              />
-            ) : null
-          )
-        ) : (
-          <p className="text-center m-auto font-medium text-gray-600">
-            No Media Found!
-          </p>
-        )}
-      </div>
+      <MediaGrid posts={posts} />
     </div>
   );
 }

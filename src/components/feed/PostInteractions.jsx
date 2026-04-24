@@ -5,84 +5,69 @@ import { useAuth } from "@clerk/nextjs";
 import Image from "next/image";
 import { useOptimistic, useState } from "react";
 
-export default function PostInteractions({ postId, likes, commentNumber }) {
-  const { isLoaded, userId } = useAuth();
+export default function PostInteractions({ postId, likes, commentNumber, onCommentClick }) {
+  const { userId } = useAuth();
   const [likeState, setLikeState] = useState({
     likeCount: likes.length,
     isLiked: userId ? likes.includes(userId) : false,
   });
+
   const [optimisticLike, switchOptimisticLike] = useOptimistic(
     likeState,
-    (state, value) => {
-      return {
-        likeCount: state.isLiked ? state.likeCount - 1 : state.likeCount + 1,
-        isLiked: !state.isLiked,
-      };
-    }
+    (state) => ({
+      likeCount: state.isLiked ? state.likeCount - 1 : state.likeCount + 1,
+      isLiked: !state.isLiked,
+    })
   );
-  const likeAction = async () => {
 
+  const likeAction = async () => {
     switchOptimisticLike();
     try {
       await switchLike(postId);
-      setLikeState((state) => ({
-        likeCount: state.isLiked ? state.likeCount - 1 : state.likeCount + 1,
-        isLiked: !state.isLiked,
+      setLikeState((s) => ({
+        likeCount: s.isLiked ? s.likeCount - 1 : s.likeCount + 1,
+        isLiked: !s.isLiked,
       }));
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (e) { console.log(e); }
   };
+
   return (
-    <div className="flex items-center justify-between text-sm my-4">
-      <div className="flex items-center gap-7">
-        <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl ">
-          <form action={likeAction}>
-            <button>
-              <Image
-                src={likeState.isLiked ? "/liked.png" : "/like.png"}
-                alt=""
-                width={20}
-                height={20}
-                className="cursor-pointer"
-              />
-            </button>
-          </form>
-          <span className="text-gray-300">|</span>
-          <span className="text-gray-500">
-            {optimisticLike.likeCount}
-            <span className=" hidden md:inline"> Likes</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl ">
-          <Image
-            src="/comment.png"
-            alt=""
-            width={20}
-            height={20}
-            className="cursor-pointer"
-          />
-          <span className="text-gray-300">|</span>
-          <span className="text-gray-500">
-            {commentNumber} <span className=" hidden md:inline"> Comments</span>
-          </span>
-        </div>
+    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+      <div className="flex items-center gap-1">
+        {/* Like */}
+        <form action={likeAction}>
+          <button
+            type="submit"
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 ${
+              optimisticLike.isLiked
+                ? "bg-red-50 text-red-500 hover:bg-red-100"
+                : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            }`}
+          >
+            <span className={`text-base transition-transform duration-200 ${optimisticLike.isLiked ? "scale-125" : "hover:scale-110"}`}>
+              {optimisticLike.isLiked ? "❤️" : "🤍"}
+            </span>
+            <span>{optimisticLike.likeCount}</span>
+            <span className="hidden md:inline text-xs">Likes</span>
+          </button>
+        </form>
+
+        {/* Comment */}
+        <button
+          onClick={onCommentClick}
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 active:scale-95"
+        >
+          <span className="text-base hover:scale-110 transition-transform duration-200">💬</span>
+          <span>{commentNumber}</span>
+          <span className="hidden md:inline text-xs">Comments</span>
+        </button>
       </div>
-      <div>
-        <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl ">
-          <Image
-            src="/share.png"
-            alt=""
-            width={20}
-            height={20}
-            className="cursor-pointer"
-          />
-          <span className="text-gray-300">|</span>
-          <span className="text-gray-500">
-            123 <span className=" hidden md:inline">Shares</span>
-          </span>
-        </div>
-      </div>
+
+      {/* Share */}
+      <button className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:bg-green-50 hover:text-green-600 transition-all duration-200 active:scale-95">
+        <span className="text-base hover:scale-110 transition-transform duration-200">↗️</span>
+        <span className="hidden md:inline text-xs">Share</span>
+      </button>
     </div>
   );
 }

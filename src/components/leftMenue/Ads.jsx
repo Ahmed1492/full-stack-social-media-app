@@ -2,55 +2,42 @@ import Image from "next/image";
 
 export default function Ads({ size }) {
   return (
-    <div className="bg-white shadow-lg rounded-lg p-4">
-      {/* TOP */}
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-500 font-semibold">Sponsered Ads</span>
-        <Image
-          src="/more.png"
-          alt=""
-          className="cursor-pointer"
-          width={16}
-          height={16}
-        />
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Sponsored</span>
+        <button className="p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+          <Image src="/more.png" alt="" className="cursor-pointer" width={14} height={14} />
+        </button>
       </div>
-      {/* BOTTOM */}
-      <div className={`flex flex-col mt-4 ${size == "sm" ? "gap-2" : "gap-4"}`}>
-        {/* Image */}
-        <div
-          className={`w-full relative ${
-            size == "sm" ? "min-h-28" : "min-h-44"
-          }`}
-        >
+      <div className={`flex flex-col ${size === "sm" ? "gap-2" : "gap-3"}`}>
+        <div className={`w-full relative rounded-xl overflow-hidden ${size === "sm" ? "min-h-28" : "min-h-44"}`}>
           <Image
             src="https://images.pexels.com/photos/23731974/pexels-photo-23731974/free-photo-of-a-stony-seashore.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
             alt=""
             fill
-            className="object-cover"
+            className="object-cover hover:scale-105 transition-transform duration-500"
           />
         </div>
-        {/* ADS NAME */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Image
             src="https://images.pexels.com/photos/10004365/pexels-photo-10004365.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
             alt=""
-            className="w-7 h-7 object-cover rounded-full"
+            className="w-7 h-7 object-cover rounded-full ring-2 ring-blue-100"
             width={28}
             height={28}
           />
-          <span className="text-sm font-medium text-blue-500">
+          <span className="text-sm font-semibold text-blue-500 hover:text-blue-600 cursor-pointer transition-colors">
             Big Chef London
           </span>
         </div>
-        {/* Desc */}
-        <p className="text-sm font-medium text-gray-600">
-          {size == "sm"
-            ? `Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ea
-          doloribus cum.`
-            : ` Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ea
-          doloribus cum. Laudantium doloremque iure debitis esse, quae libero
-          voluptates! Voluptatibus, placeat. `}
+        <p className="text-xs text-gray-500 leading-relaxed">
+          {size === "sm"
+            ? "Lorem ipsum dolor sit amet consectetur adipisicing elit."
+            : "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ea doloribus cum. Laudantium doloremque iure debitis esse, quae libero voluptates!"}
         </p>
+        <button className="w-full text-center text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 py-1.5 rounded-lg transition-all duration-200">
+          Learn More
+        </button>
       </div>
     </div>
   );

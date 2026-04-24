@@ -5,79 +5,69 @@ import Link from "next/link";
 import React from "react";
 
 export default async function ProfileCart() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return null;
   const user = await prisma.user.findFirst({
     where: { id: userId },
     include: {
-      _count: {
-        select: {
-          followers: true,
-        },
-      },
+      _count: { select: { followers: true, followings: true, posts: true } },
     },
   });
-  // console.log(user);
   if (!user) return null;
+
   return (
-    <div className="bg-white shadow-lg rounded-lg p-4 text-sm flex flex-col gap-2">
-      <div className=" h-24 relative ">
-        <Image
-          src={user.cover || "/noCover.jpg"}
-          alt=""
-          fill
-          className="rounded-md object-cover"
-        />
-        <Image
-          src={user.avatar || "/noAvatar.png"}
-          alt=""
-          className="rounded-full object-cover ring-1 ring-white z-10 w-12 h-12 absolute left-0 right-0 m-auto -bottom-6" // > height : 12
-          width={48}
-          height={48}
-        />
+    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in">
+      {/* Cover */}
+      <div className="h-28 relative group/cover overflow-hidden">
+        <Image src={user.cover || "/noCover.jpg"} alt="" fill className="object-cover group-hover/cover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
       </div>
-      <Link
-        href={`/profile/${user?.username}`}
-        className="font-bold mt-4  text-lg text-center"
-      >
-        {user.name && user.surname
-          ? user.name + " " + user.surname
-          : user.username}
-      </Link>
-      <div className="flex items-center justify-center gap-3">
-        {/* IMAGES */}
-        <div className="flex items-center gap-1">
-          <Image
-            src="https://images.pexels.com/photos/19975991/pexels-photo-19975991/free-photo-of-laughing-woman-in-fur-hat-sitting-on-mans-back-under-snowfall.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-            className="w-4 h-4 object-cover rounded-full"
-            width={16}
-            height={16}
-          />
-          <Image
-            src="https://images.pexels.com/photos/19975991/pexels-photo-19975991/free-photo-of-laughing-woman-in-fur-hat-sitting-on-mans-back-under-snowfall.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-            className="w-4 h-4 object-cover rounded-full"
-            width={16}
-            height={16}
-          />
-          <Image
-            src="https://images.pexels.com/photos/19975991/pexels-photo-19975991/free-photo-of-laughing-woman-in-fur-hat-sitting-on-mans-back-under-snowfall.jpeg?auto=compress&cs=tinysrgb&w=600&lazy=load"
-            alt=""
-            className="w-4 h-4 object-cover rounded-full"
-            width={16}
-            height={16}
-          />
+
+      <div className="px-4 pb-5">
+        {/* Avatar */}
+        <div className="flex justify-center -mt-7 mb-3">
+          <div className="relative hover-lift">
+            <Image
+              src={user.avatar || "/noAvatar.png"}
+              alt=""
+              className="rounded-full object-cover ring-4 ring-white shadow-lg w-14 h-14"
+              width={56}
+              height={56}
+            />
+            <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white shadow-sm" />
+          </div>
         </div>
-        {/* FOLLWOERS NUMBER */}
-        <span className="font-light text-gray-500 text-base">
-          {user._count.followers} Follwers
-        </span>
-      </div>
-      <div className="flex justify-center items-center">
-        <button className="bg-blue-500 text-white py-2 px-2 rounded-lg text-base ">
-          My Profile
-        </button>
+
+        {/* Name */}
+        <Link
+          href={`/profile/${user?.username}`}
+          className="block text-center font-bold text-gray-900 hover:text-blue-600 transition-colors duration-200 text-sm mb-0.5"
+        >
+          {user.name && user.surname ? user.name + " " + user.surname : user.username}
+        </Link>
+        <p className="text-center text-xs text-gray-400 mb-4">@{user.username}</p>
+
+        {/* Stats */}
+        <div className="flex items-center justify-around py-3 border-y border-gray-100">
+          {[
+            { label: "Posts", value: user._count.posts },
+            { label: "Followers", value: user._count.followers },
+            { label: "Following", value: user._count.followings },
+          ].map((stat, i) => (
+            <div key={stat.label} className="flex flex-col items-center gap-0.5 group/stat cursor-pointer">
+              <span className="font-bold text-gray-900 text-sm group-hover/stat:text-blue-600 transition-colors">{stat.value}</span>
+              <span className="text-gray-400 text-[11px]">{stat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <Link
+          href={`/profile/${user?.username}`}
+          className="mt-4 flex items-center justify-center gap-2 w-full bg-gradient-to-r from-blue-600 to-indigo-500 hover:from-blue-700 hover:to-indigo-600 text-white py-2 rounded-xl text-xs font-bold transition-all duration-300 hover:shadow-lg hover:shadow-blue-200/60 hover:-translate-y-0.5"
+        >
+          View My Profile →
+        </Link>
       </div>
     </div>
   );

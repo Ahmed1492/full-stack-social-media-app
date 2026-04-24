@@ -1,112 +1,157 @@
 "use client";
 import { addStory } from "@/lib/actions";
 import { useUser } from "@clerk/nextjs";
-import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
-import React, { useOptimistic, useState } from "react";
+import React, { useOptimistic, useState, useRef } from "react";
 import OpenedStory from "@/components/OpenedStory";
+
 export default function StoryList({ stories, userId }) {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [storyList, setStoryList] = useState(stories);
-  const [img, setImg] = useState("");
-  const { isLoaded } = useUser();
-  const [openStory, setOpenStroy] = useState(null);
+  const [openedGroup, setOpenedGroup] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const fileRef = useRef(null);
+
   const [optimisticStory, addOptimisticStory] = useOptimistic(
     storyList,
     (state, value) => [value, ...state]
   );
-  if (!userId && !isLoaded) return "Loading...";
-  if (!userId && isLoaded) return null;
-  const add = async () => {
-    if (!img?.secure_url) return;
-    addOptimisticStory({
-      id: Math.random(),
-      img: img?.secure_url,
-      createdAt: new Date(Date.now()),
-      updatedAt: new Date(Date.now() + 25 * 60 * 60 * 1000),
-      userId: userId,
-      user: {
-        id: userId,
-        username: "Sending...",
-        descrition: "",
-        avatar: user.imageUrl || "/noAvatar.png",
-        cover: "",
-        name: "",
-        surname: "",
-        city: "",
-        work: "",
-        school: "",
-        website: "",
-        createdAt: new Date(Date.now()),
-      },
-    });
+
+  if (!isLoaded) return null;
+  if (!userId) return null;
+
+  // Group stories by user — one circle per user
+  const grouped = optimisticStory.reduce((acc, story) => {
+    const uid = story.user.id;
+    if (!acc[uid]) acc[uid] = { user: story.user, stories: [] };
+    acc[uid].stories.push(story);
+    return acc;
+  }, {});
+  const groups = Object.values(grouped);
+
+  const uploadAndPost = async (file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    setPreview(URL.createObjectURL(file));
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "social");
+
     try {
-      const createdStory = await addStory(img?.secure_url);
-      setStoryList((prev) => [createdStory, ...prev]);
-      setImg(null);
-    } catch (error) {
-      console.log(error);
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        { method: "POST", body: formData }
+      );
+      const data = await res.json();
+
+      addOptimisticStory({
+        id: Math.random(),
+        img: data.secure_url,
+        createdAt: new Date(),
+        expirseAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        userId,
+        user: {
+          id: userId,
+          username: user?.username || "You",
+          avatar: user?.imageUrl || "/noAvatar.png",
+          name: user?.firstName || "",
+          surname: user?.lastName || "",
+        },
+      });
+
+      const created = await addStory(data.secure_url);
+      setStoryList((prev) => [created, ...prev]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+      setPreview(null);
+      if (fileRef.current) fileRef.current.value = "";
     }
   };
-  const handleOpenStory = (story) => {
-    setOpenStroy(story);
-  };
+
   return (
     <>
-      <CldUploadWidget
-        uploadPreset="social"
-        onSuccess={(result, { widget }) => {
-          setImg(result.info);
-          widget.close();
-        }}
-      >
-        {({ open }) => {
-          return (
-            <div className="flex flex-col items-center gap-2 cursor-pointer relative">
-              <Image
-                src={img?.secure_url || user?.imageUrl || "/noAvatar.png"}
-                alt=""
-                width={80}
-                height={80}
-                className="w-20 h-20 rounded-full ring-2 object-cover"
-                onClick={open ? () => open() : console.log("Not Allowed")}
-              />
-              {img ? (
-                <form action={add}>
-                  <button className="bg-blue-500 text-sm text-white rounded-lg py-1 px-3">
-                    Send
-                  </button>
-                </form>
-              ) : (
-                <span className="font-medium">Add a Story</span>
-              )}
-              <div className="absolute text-xl font-medium top-8 text-gray-200">
-                Add
+      {/* Add story button */}
+      <div className="flex flex-col items-center gap-2 flex-shrink-0">
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="relative w-16 h-16 rounded-full"
+        >
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-400 p-0.5">
+            <div className="w-full h-full rounded-full bg-white p-0.5">
+              <div className="w-full h-full rounded-full overflow-hidden relative">
+                <Image
+                  src={preview || user?.imageUrl || "/noAvatar.png"}
+                  alt=""
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
-          );
-        }}
-      </CldUploadWidget>
-      {openStory && <OpenedStory setOpenStroy={setOpenStroy} openStory={openStory} />}
+          </div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center">
+            {isUploading ? (
+              <div className="w-2.5 h-2.5 border border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <span className="text-white text-xs font-bold leading-none">+</span>
+            )}
+          </div>
+        </button>
+        <span className="text-xs font-medium text-gray-500 whitespace-nowrap">
+          {isUploading ? "Posting..." : "Add Story"}
+        </span>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => uploadAndPost(e.target.files[0])}
+        />
+      </div>
 
-      {optimisticStory.map((story) => (
+      {/* One circle per user */}
+      {groups.map((group) => (
         <div
-          key={story.id}
-          className="flex flex-col items-center gap-2 cursor-pointer"
-          onClick={() => handleOpenStory(story)}
+          key={group.user.id}
+          className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0 group"
+          onClick={() => setOpenedGroup({ stories: group.stories, startIndex: 0 })}
         >
-          <Image
-            src={story.img || "/noAvatar.png"}
-            alt=""
-            width={80}
-            height={80}
-            className="w-20 h-20 rounded-full ring-2 object-cover"
-          />
-          <span className="font-medium">
-            {story.user.name || story.user.username}
+          <div className="relative w-16 h-16 rounded-full">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-500 via-red-500 to-yellow-400 p-0.5 group-hover:from-pink-600 group-hover:to-yellow-500 transition-all duration-200">
+              <div className="w-full h-full rounded-full bg-white p-0.5">
+                <div className="w-full h-full rounded-full overflow-hidden relative">
+                  <Image
+                    src={group.stories[0].img || group.user.avatar || "/noAvatar.png"}
+                    alt=""
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+              </div>
+            </div>
+            {group.stories.length > 1 && (
+              <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center">
+                <span className="text-white text-[9px] font-bold">{group.stories.length}</span>
+              </div>
+            )}
+          </div>
+          <span className="text-xs font-medium text-gray-600 group-hover:text-blue-600 transition-colors whitespace-nowrap max-w-[72px] truncate">
+            {group.user.name || group.user.username}
           </span>
         </div>
       ))}
+
+      {/* Story viewer */}
+      {openedGroup && (
+        <OpenedStory
+          stories={openedGroup.stories}
+          startIndex={openedGroup.startIndex}
+          onClose={() => setOpenedGroup(null)}
+        />
+      )}
     </>
   );
 }

@@ -6,22 +6,28 @@ import React, { useState } from "react";
 export default function PostInfo({ postId }) {
   const [open, setOpen] = useState(false);
   const deletePostWithId = deletePost.bind(null, postId);
+
   return (
     <div className="relative">
-      <Image
+      <button
         onClick={() => setOpen(!open)}
-        src="/more.png"
-        className="cursor-pointer"
-        width={18}
-        height={18}
-        alt=""
-      />
+        className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+      >
+        <Image src="/more.png" className="cursor-pointer" width={18} height={18} alt="" />
+      </button>
       {open && (
-        <div className="absolute top-4 right-0 p-4 w-32 rounded-lg flex flex-col gap-2 text-xs shadow-lg z-50 bg-white">
-          <span className="cursor-pointer ">View</span>
-          <span className="cursor-pointer ">Repost</span>
+        <div className="absolute top-8 right-0 bg-white border border-gray-100 rounded-xl shadow-lg p-2 w-36 flex flex-col gap-1 z-50 animate-scale-in">
+          <button className="text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors duration-150">
+            View
+          </button>
+          <button className="text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors duration-150">
+            Repost
+          </button>
+          <hr className="border-gray-100" />
           <form action={deletePostWithId}>
-            <button className="text-red-500">Delete</button>
+            <button className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-150 font-medium">
+              Delete
+            </button>
           </form>
         </div>
       )}

@@ -4,9 +4,7 @@ import Image from "next/image";
 import React from "react";
 import StoryList from "@/components/StoryList";
 export default async function Stories() {
-  const { userId: currentUserId } = auth();
-  console.log("currentUserI222d", currentUserId);
-
+  const { userId: currentUserId } = await auth();
   if (!currentUserId) return null;
 
   const followings = await prisma.follower.findMany({
@@ -50,8 +48,8 @@ export default async function Stories() {
   });
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md overflow-scroll text-sm scrollbar-hidden">
-      <div className="flex gap-8 w-max">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 overflow-x-auto scrollbar-hidden">
+      <div className="flex gap-4 w-max">
         <StoryList stories={stories} userId={currentUserId} />
       </div>
     </div>
