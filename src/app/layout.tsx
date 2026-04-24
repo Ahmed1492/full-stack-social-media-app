@@ -4,7 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { ClerkProvider } from "@clerk/nextjs";
 import { syncUser } from "@/lib/actions";
-import ThemeProvider from "@/components/ThemeProvider";
+// import ThemeProvider from "@/components/ThemeProvider"; // TODO: dark mode
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -37,14 +37,19 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body className={inter.className}>
-          <ThemeProvider>
-            <div className="w-full bg-white dark:bg-gray-900 px-4 md:px-7 lg:px-16 xl:px-32 2xl:px-64 sticky top-0 z-50 shadow-sm dark:shadow-gray-800/50 dark:border-b dark:border-gray-800">
+          {/* <ThemeProvider> TODO: dark mode */}
+            <div className="w-full bg-white px-4 md:px-7 lg:px-16 xl:px-32 2xl:px-64 sticky top-0 z-50 shadow-sm">
               <Navbar />
             </div>
-            <div className="bg-slate-50 dark:bg-gray-950 min-h-screen px-4 md:px-7 lg:px-16 xl:px-32 2xl:px-64">
+            <div className="bg-slate-50 min-h-screen px-4 md:px-7 lg:px-16 xl:px-32 2xl:px-64">
               {children}
+              <footer className="text-center py-6 mt-8 border-t border-gray-100">
+                <p className="text-xs text-gray-400">
+                  © {new Date().getFullYear()} <span className="font-semibold text-gray-500">Connectly</span> — Built by <span className="font-semibold text-blue-500">Ahmed Mohamed</span>. All rights reserved.
+                </p>
+              </footer>
             </div>
-          </ThemeProvider>
+          {/* </ThemeProvider> */}
         </body>
       </html>
     </ClerkProvider>

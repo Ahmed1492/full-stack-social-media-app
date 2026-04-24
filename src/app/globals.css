@@ -15,6 +15,7 @@
   --skeleton-to: #e0e0e0;
 }
 
+/* TODO: dark mode — re-enable when ready
 .dark {
   --bg-primary: #0f172a;
   --bg-card: #1e293b;
@@ -26,15 +27,16 @@
   --skeleton-from: #1e293b;
   --skeleton-to: #263348;
 }
+*/
 
-/* Apply dark mode to body */
+/* Apply to body */
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Dark mode overrides for common elements */
+/* TODO: dark mode overrides — re-enable when ready
 .dark .bg-white { background-color: var(--bg-card) !important; }
 .dark .bg-slate-50,
 .dark .bg-slate-100,
@@ -55,6 +57,7 @@ body {
 .dark input,
 .dark textarea { background-color: var(--bg-card-hover) !important; color: var(--text-primary) !important; border-color: var(--border) !important; }
 .dark .bg-slate-100 { background-color: var(--bg-card-hover) !important; }
+*/
 
 .mobileMenueHeight,
 .customHeight {

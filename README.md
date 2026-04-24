@@ -1,84 +1,145 @@
-# Full Stack Social Media App Using Nextjs
-This repository contains a full-stack social media application built using Next.js, Prisma, and MySQL. The app offers a modern and dynamic user experience, enabling seamless interaction through features like posts, likes, comments, and social connections. It leverages server actions for enhanced performance and scalability.
+# Connectly — Social Network
+
+A full-stack social media application built with **Next.js 15**, **Prisma**, **Clerk**, and **Tailwind CSS**.
+
+---
+
+## 🚀 Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router) |
+| Database | MySQL via Aiven (hosted) |
+| ORM | Prisma 6 |
+| Auth | Clerk |
+| Styling | Tailwind CSS v3 |
+| Image Upload | Cloudinary |
+| Deployment | Vercel |
+
+---
+
+## ✨ Features
+
+- **Authentication** — Sign up / sign in via Clerk (Google OAuth + email)
+- **Feed** — Create posts with text and images, like, comment, delete
+- **Stories** — Upload and view 24h stories with Instagram-style viewer
+- **Profile** — Cover photo, avatar, bio, stats, media grid with lightbox
+- **Friends** — Follow/unfollow, friend requests, block users
+- **Messages** — Conversations UI (mock data)
+- **Notifications** — Activity feed (mock data)
+- **Search** — Real-time user search + full search page
+- **Explore** — Marketplace, Events, Groups, Videos pages
+- **Settings** — Account preferences, privacy toggles
+- **Responsive** — Mobile-friendly with hamburger menu
+- **Animations** — Slide-up, fade-in, scale-in, shimmer skeletons
+- **Post Modal** — Click image to open full post with comments
+- **Media Lightbox** — Click profile media grid to open fullscreen viewer
+
+---
+
+## 🛠️ Local Development
+
+### 1. Clone & install
+
+```bash
+git clone <your-repo-url>
+cd next-social-starter
+npm install
+```
+
+### 2. Environment variables
+
+Create a `.env` file:
+
+```env
+# Database (Aiven MySQL)
+DATABASE_URL="mysql://user:password@host:port/social?ssl-mode=REQUIRED"
+
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+SIGNING_SECRET=whsec_...
+WEBHOOK_SECRET=whsec_...
+
+# Cloudinary
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloud_name
+NEXT_PUBLIC_CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+### 3. Push database schema
+
+```bash
+npx prisma db push
+```
+
+### 4. Run dev server
+
+```bash
+npm run dev
+```
+
+---
+
+## 🌐 Deployment (Vercel)
+
+1. Push to GitHub
+2. Import repo on [vercel.com](https://vercel.com)
+3. Add all environment variables from `.env`
+4. Deploy — Vercel runs `prisma generate && next build` automatically
+
+### After deploy — update Clerk webhook
+
+- Clerk Dashboard → Webhooks → edit endpoint URL
+- Change from ngrok URL to: `https://your-app.vercel.app/api/webhooks/clerk`
+- Subscribe to: `user.created`, `user.updated`, `user.deleted`
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── page.tsx            # Home feed
+│   ├── profile/[username]/ # User profile
+│   ├── friends/            # Friends page
+│   ├── messages/           # Messages
+│   ├── notifications/      # Notifications
+│   ├── search/             # Search
+│   ├── settings/           # Settings
+│   ├── marketplace/        # Marketplace
+│   ├── events/             # Events
+│   ├── groups/             # Groups
+│   ├── videos/             # Videos
+│   └── api/webhooks/clerk/ # Clerk webhook handler
+├── components/
+│   ├── feed/               # Post, Feed, Comments, PostModal
+│   ├── leftMenue/          # Sidebar navigation
+│   ├── rightMenue/         # User info, media, friend requests
+│   └── ...                 # Navbar, Stories, AddPost, etc.
+└── lib/
+    ├── actions.ts          # Server actions
+    └── client.ts           # Prisma client
+```
+
+---
+
+## 🔮 Roadmap
+
+- [ ] Dark mode (commented out, to be rebuilt)
+- [ ] Real-time messaging with WebSockets
+- [ ] Push notifications
+- [ ] Video upload support
+- [ ] Mobile app (React Native)
+
+---
+
+© 2026 **Connectly** — Built by **Ahmed Mohamed**. All rights reserved.
 
 
-
-
-# 1. Features
- 
-### User Authentication and Profiles:
-- Secure user authentication with Clerk.js.
-- Editable user profiles, including fields like name, avatar, cover, description, and city.
-
-
-### Social Interactions:
-- Follow/unfollow users and manage follow requests.
-- Block and unblock users.
-- View and respond to follow requests.
-
-
-### Content Sharing:
-- Create posts with optional images.
-- Add comments to posts.
-- Like/unlike posts and comments.
-
-### Stories Feature:
-- Upload temporary stories that expire after 24 hours.
-
-### Efficient Rendering:
-- Use Suspense for better rendering of asynchronous components.
-- Reactively update UI with useOptimistic hook for a smooth user experience.
-- Enhance form handling with useFormStatus hook for managing submission states.
-- Use server actions to process interactions like posting, liking, commenting, and following directly on the server for optimized performance.
-
-  
-# 2. Demo
-
-- https://www.linkedin.com/posts/activity-7284177306414178305-v6gh?utm_source=share&utm_medium=member_desktop
-
-# 3. Technologies Used
-
-### Front-End:
- -  Next.js  with App Router for server actions and dynamic routing.
- -  React for building a responsive user interface and use react features like hooks in client side and handle intreractions .
-
-
-### Back-End:
-- Prisma ORM for interacting with a MySQL database.
-- Server-side data fetching and actions for efficient performance.
-
-
-### Database:
- - MySQL as the relational database.
-
-
-### Validation:
- - Zod for input validation to ensure data integrity.
-
-
-### Additional Tools:
-- svix webhook service library for managing webhooks in an application
-- Clerk.js for authentication.
-- Tailwind CSS for styling.
-- React Suspense, useOptimistic hook,
-- and useFormStatus hook for advanced client-side interactions.
-
-
-# 4. Installation
-
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Ahmed1492/full-stack-social-media-app.git
-    ```
-2. Set up your .env file with the required DATABASE_URL and Clerk credentials
- 
-3. Run database migrations using Prisma:
-
-    ```bash
-   npx prisma migrate dev
-    ```
-4. Start the development server:
-:
-    ```bash
-    npm run dev
-    ```
+- Dark mode is currently **disabled** (code is commented out, will be rebuilt with a better implementation)
+- Mock data is used for: Messages, Notifications, Events, Groups, Marketplace, Videos, Online Friends
+- Webhook requires ngrok for local development or a deployed URL for production

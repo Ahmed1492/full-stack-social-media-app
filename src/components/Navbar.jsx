@@ -3,7 +3,7 @@ import React from "react";
 import MobileMenue from "@/components/MobileMenue";
 import SearchUsers from "@/components/SearchUsers";
 import Image from "next/image";
-import NavbarThemeToggle from "@/components/NavbarThemeToggle";
+// import NavbarThemeToggle from "@/components/NavbarThemeToggle"; // TODO: dark mode
 import {
   ClerkLoaded,
   ClerkLoading,
@@ -39,7 +39,7 @@ const iconButtons = [
 
 export default function Navbar() {
   return (
-    <nav className="h-16 flex items-center justify-between gap-4 dark:bg-gray-900">
+    <nav className="h-16 flex items-center justify-between gap-4">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
         <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200/60 group-hover:shadow-blue-300/80 group-hover:scale-110 transition-all duration-300">
@@ -82,7 +82,7 @@ export default function Navbar() {
 
         <ClerkLoaded>
           <SignedIn>
-            <NavbarThemeToggle />
+            {/* <NavbarThemeToggle /> TODO: dark mode */}
             <div className="flex items-center gap-0.5 ml-1">
               {iconButtons.map(({ alt, href, badge, Icon }) => (
                 <Link
