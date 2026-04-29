@@ -31,8 +31,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Don't await — run in background, don't block page render
-  syncUser().catch(() => {});
+  await syncUser().catch(() => {});
   return (
     <ClerkProvider>
       <html lang="en">
