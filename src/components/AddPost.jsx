@@ -5,10 +5,13 @@ import React, { useState, useRef } from "react";
 import AddPostButton from "@/components/feed/AddPostButton";
 import { addPost } from "@/lib/actions";
 import Loading from "@/components/Loading";
+import PostSkeleton from "@/components/feed/PostSkeleton";
 
 const EMOJIS = ["😀","😂","❤️","👍","🔥","😍","🎉","😢","😮","🙏","✨","💯"];
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-export default function AddPost() {
+export default function AddPost({ onPostAdded }) {
   const { user, isLoaded } = useUser();
   const [desc, setDesc] = useState("");
   const [img, setImg] = useState(null);
@@ -16,29 +19,53 @@ export default function AddPost() {
   const [isUploading, setIsUploading] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [imgError, setImgError] = useState(null);
+  const [isPosting, setIsPosting] = useState(false);
   const fileRef = useRef(null);
 
   if (!isLoaded) return <Loading />;
 
   const uploadToCloudinary = async (file) => {
-    if (!file || !file.type.startsWith("image/")) return;
-    // Show local preview immediately
+    if (!file) return;
+
+    // Type check
+    if (!file.type.startsWith("image/")) {
+      setImgError("Only image files are supported (PNG, JPG, GIF, WebP).");
+      return;
+    }
+
+    // Size check
+    if (file.size > MAX_SIZE_BYTES) {
+      setImgError(
+        `Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Please choose an image under ${MAX_SIZE_MB} MB.`
+      );
+      return;
+    }
+
+    setImgError(null);
     const localUrl = URL.createObjectURL(file);
     setImgPreview(localUrl);
     setIsUploading(true);
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "social");
+
     try {
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
         { method: "POST", body: formData }
       );
       const data = await res.json();
-      setImg(data.secure_url);
+      if (data.secure_url) {
+        setImg(data.secure_url);
+      } else {
+        throw new Error("Upload failed");
+      }
     } catch (err) {
       console.error(err);
       setImgPreview(null);
+      setImgError("Failed to upload image. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -55,15 +82,35 @@ export default function AddPost() {
   const removeImage = () => {
     setImg(null);
     setImgPreview(null);
+    setImgError(null);
     if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleSubmit = async (formData) => {
-    await addPost(formData, img || "");
-    setImg(null);
-    setImgPreview(null);
-    setDesc("");
+    setIsPosting(true);
+    try {
+      await addPost(formData, img || "");
+      setImg(null);
+      setImgPreview(null);
+      setDesc("");
+      setImgError(null);
+      onPostAdded?.();
+    } finally {
+      setIsPosting(false);
+    }
   };
+
+  // Show skeleton while waiting for feed to refresh
+  if (isPosting) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 opacity-50 pointer-events-none">
+          <p className="text-sm text-gray-400 text-center">Publishing your post...</p>
+        </div>
+        <PostSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 animate-fade-in">
@@ -111,7 +158,22 @@ export default function AddPost() {
               </div>
             </div>
 
-            {/* Image area — preview or drop zone */}
+            {/* Image error banner */}
+            {imgError && (
+              <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-4 py-3 animate-scale-in">
+                <svg className="flex-shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <p className="text-sm text-red-600 font-medium flex-1">{imgError}</p>
+                <button type="button" onClick={() => setImgError(null)} className="text-red-400 hover:text-red-600 transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Image area */}
             {imgPreview ? (
               <div className="relative rounded-2xl overflow-hidden border border-gray-200 animate-scale-in group">
                 <Image
@@ -121,14 +183,12 @@ export default function AddPost() {
                   height={400}
                   className="w-full max-h-72 object-cover"
                 />
-                {/* Uploading overlay */}
                 {isUploading && (
                   <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-2">
                     <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin" />
                     <span className="text-white text-sm font-semibold">Uploading...</span>
                   </div>
                 )}
-                {/* Ready overlay */}
                 {!isUploading && (
                   <div className="absolute top-2 left-2 bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
                     <span>✓</span> Ready
@@ -143,7 +203,6 @@ export default function AddPost() {
                 </button>
               </div>
             ) : (
-              /* Drop zone — only shown when no image */
               <div
                 onClick={() => fileRef.current?.click()}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -164,7 +223,9 @@ export default function AddPost() {
                   <p className="text-sm font-medium text-gray-500">
                     {isDragging ? "Drop your image here!" : "Add a photo"}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">Click or drag & drop · PNG, JPG</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Click or drag & drop · PNG, JPG · Max {MAX_SIZE_MB} MB
+                  </p>
                 </div>
               </div>
             )}
@@ -195,7 +256,7 @@ export default function AddPost() {
                   </button>
                 ))}
               </div>
-              <AddPostButton />
+              <AddPostButton disabled={isUploading} />
             </div>
           </form>
         </div>

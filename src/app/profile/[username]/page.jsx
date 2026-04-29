@@ -6,6 +6,7 @@ import Image from "next/image";
 import prisma from "@/lib/client";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
+import ProfileStats from "@/components/ProfileStats";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,23 @@ export default async function ProfilePage({ params }) {
     if (res) return notFound();
   }
 
+  // Fetch full data for modal
+  const [posts, followers, followings] = await Promise.all([
+    prisma.post.findMany({
+      where: { userId: user.id },
+      select: { id: true, img: true, description: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.follower.findMany({
+      where: { followingId: user.id },
+      include: { follower: { select: { id: true, username: true, avatar: true, name: true, surname: true } } },
+    }),
+    prisma.follower.findMany({
+      where: { followerId: user.id },
+      include: { following: { select: { id: true, username: true, avatar: true, name: true, surname: true } } },
+    }),
+  ]);
+
   return (
     <div className="flex gap-6 pt-6">
       <div className="hidden xl:block w-[20%]">
@@ -45,12 +63,11 @@ export default async function ProfilePage({ params }) {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in">
             {/* Cover */}
             <div className="w-full h-48 relative">
-              <Image
-                src={user.cover || "/noCover.jpg"}
-                alt=""
-                fill
-                className="object-cover"
-              />
+              {user.cover && user.cover !== "/noCover.jpg" ? (
+                <Image src={user.cover} alt="" fill className="object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600" />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             </div>
 
@@ -77,18 +94,13 @@ export default async function ProfilePage({ params }) {
               </div>
 
               {/* Stats */}
-              <div className="flex gap-6 pt-4 border-t border-gray-100">
-                {[
-                  { label: "Posts", value: user._count.posts },
-                  { label: "Followers", value: user._count.followers },
-                  { label: "Following", value: user._count.followings },
-                ].map((stat) => (
-                  <div key={stat.label} className="flex flex-col items-center gap-0.5">
-                    <span className="font-bold text-gray-900 text-lg">{stat.value}</span>
-                    <span className="text-xs text-gray-400 font-medium">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
+              <ProfileStats
+                username={user.username}
+                posts={posts}
+                followers={followers}
+                followings={followings}
+                counts={user._count}
+              />
             </div>
           </div>
 

@@ -1,8 +1,8 @@
 import LeftMenue from "@/components/leftMenue/LeftMenue";
 import RightMenue from "@/components/rightMenue/RightMenue";
 import Stories from "@/components/Stories";
-import AddPost from "@/components/AddPost";
 import Feed from "@/components/feed/Feed";
+import FeedSection from "@/components/feed/FeedSection";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +19,7 @@ const Homepage = () => {
       <div className="w-full lg:w-[70%] xl:w-[50%]">
         <div className="flex flex-col gap-6">
           <Stories />
-          <AddPost />
-          <Feed  />
+          <FeedSection feedSlot={<Feed />} />
         </div>
       </div>
       {/* Right */}

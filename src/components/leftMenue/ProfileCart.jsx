@@ -19,7 +19,11 @@ export default async function ProfileCart() {
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 animate-fade-in">
       {/* Cover */}
       <div className="h-28 relative group/cover overflow-hidden">
-        <Image src={user.cover || "/noCover.jpg"} alt="" fill className="object-cover group-hover/cover:scale-105 transition-transform duration-500" />
+        {user.cover && user.cover !== "/noCover.jpg" ? (
+          <Image src={user.cover} alt="" fill className="object-cover group-hover/cover:scale-105 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-blue-400 via-indigo-500 to-purple-600" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
       </div>
 

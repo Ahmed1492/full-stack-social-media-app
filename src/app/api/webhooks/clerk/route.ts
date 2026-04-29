@@ -66,7 +66,7 @@ export async function POST(req: Request) {
           id: evt.data.id,
           username,
           avatar: data.image_url || "/noAvatar.png",
-          cover: "/noCover.jpg",
+          cover: null,
           name: data.first_name || null,
           surname: data.last_name || null,
         },

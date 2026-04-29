@@ -26,7 +26,7 @@ export const syncUser = async () => {
       id: userId,
       username,
       avatar: clerkUser.imageUrl || "/noAvatar.png",
-      cover: "/noCover.jpg",
+      cover: null,
       name: clerkUser.firstName || null,
       surname: clerkUser.lastName || null,
     },
@@ -70,6 +70,10 @@ export const switchFollow = async (userId: string) => {
             senderId: currentUser,
             receiverId: userId,
           },
+        });
+        // Notify receiver of follow request
+        await prisma.notification.create({
+          data: { type: "follow_request", senderId: currentUser, receiverId: userId },
         });
       }
     }
@@ -131,6 +135,10 @@ export const acceptFollowRequest = async (userId: string) => {
           followerId: userId,
           followingId: currentUser,
         },
+      });
+      // Notify the accepted user
+      await prisma.notification.create({
+        data: { type: "follow_accept", senderId: currentUser, receiverId: userId },
       });
     }
   } catch (error) {
@@ -210,26 +218,20 @@ export const switchLike = async (postId: number) => {
   if (!userId) throw new Error("you Are Not Authenticateted");
 
   try {
-    // Check if liked post Before
     const existingLike = await prisma.like.findFirst({
-      where: {
-        userId,
-        postId,
-      },
+      where: { userId, postId },
     });
     if (existingLike) {
-      await prisma.like.delete({
-        where: {
-          id: existingLike.id,
-        },
-      });
+      await prisma.like.delete({ where: { id: existingLike.id } });
     } else {
-      await prisma.like.create({
-        data: {
-          postId,
-          userId,
-        },
-      });
+      await prisma.like.create({ data: { postId, userId } });
+      // Notify post owner (not self)
+      const post = await prisma.post.findUnique({ where: { id: postId }, select: { userId: true } });
+      if (post && post.userId !== userId) {
+        await prisma.notification.create({
+          data: { type: "like", senderId: userId, receiverId: post.userId, postId },
+        });
+      }
     }
   } catch (error) {
     console.log(error);
@@ -243,15 +245,16 @@ export const addComment = async (postId: number, description: string) => {
 
   try {
     const createdComment = await prisma.comment.create({
-      data: {
-        description,
-        userId,
-        postId,
-      },
-      include: {
-        user: true,
-      },
+      data: { description, userId, postId },
+      include: { user: true },
     });
+    // Notify post owner (not self)
+    const post = await prisma.post.findUnique({ where: { id: postId }, select: { userId: true } });
+    if (post && post.userId !== userId) {
+      await prisma.notification.create({
+        data: { type: "comment", senderId: userId, receiverId: post.userId, postId, commentId: createdComment.id },
+      });
+    }
     return createdComment;
   } catch (error) {
     console.log(error);
@@ -303,6 +306,24 @@ export const addStory = async (img: string) => {
   } catch (error) {
     console.log(error);
     throw new Error("some thing went wrong!");
+  }
+};
+
+export const updatePost = async (postId: number, description: string) => {
+  const { userId: currentUser } = await auth();
+  if (!currentUser) throw new Error("User not Authenticated");
+  const Desc = z.string().min(1).max(255);
+  const validated = Desc.safeParse(description);
+  if (!validated.success) throw new Error("Invalid description");
+  try {
+    await prisma.post.update({
+      where: { id: postId, userId: currentUser },
+      data: { description: validated.data },
+    });
+    revalidatePath("/");
+  } catch (error) {
+    console.log(error);
+    throw new Error("Something went wrong");
   }
 };
 
@@ -377,4 +398,134 @@ export const searchUsers = async (query: string) => {
     console.error("Error fetching users:", error);
     throw new Error("Something went wrong while fetching users!");
   }
+};
+
+export const markNotificationsRead = async () => {
+  const { userId } = await auth();
+  if (!userId) return;
+  await prisma.notification.updateMany({
+    where: { receiverId: userId, read: false },
+    data: { read: true },
+  });
+};
+
+export const getNotifications = async () => {
+  const { userId } = await auth();
+  if (!userId) return [];
+  return prisma.notification.findMany({
+    where: { receiverId: userId },
+    include: { sender: { select: { username: true, avatar: true, name: true, surname: true } } },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+};
+
+export const getOrCreateConversation = async (otherUserId: string) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not authenticated");
+
+  // Find existing conversation between the two users
+  const existing = await prisma.conversation.findFirst({
+    where: {
+      AND: [
+        { participants: { some: { userId } } },
+        { participants: { some: { userId: otherUserId } } },
+      ],
+    },
+    include: {
+      participants: { include: { user: { select: { id: true, username: true, avatar: true, name: true, surname: true } } } },
+      messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { id: true, username: true, avatar: true } } } },
+    },
+  });
+
+  if (existing) return existing;
+
+  // Create new conversation
+  return prisma.conversation.create({
+    data: {
+      participants: {
+        create: [{ userId }, { userId: otherUserId }],
+      },
+    },
+    include: {
+      participants: { include: { user: { select: { id: true, username: true, avatar: true, name: true, surname: true } } } },
+      messages: { orderBy: { createdAt: "asc" }, include: { sender: { select: { id: true, username: true, avatar: true } } } },
+    },
+  });
+};
+
+export const sendMessage = async (conversationId: number, text: string) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Not authenticated");
+  const TextSchema = z.string().min(1).max(1000);
+  const validated = TextSchema.safeParse(text);
+  if (!validated.success) throw new Error("Invalid message");
+
+  const [message] = await prisma.$transaction([
+    prisma.message.create({
+      data: { text: validated.data, senderId: userId, conversationId },
+      include: { sender: { select: { id: true, username: true, avatar: true } } },
+    }),
+    prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    }),
+  ]);
+
+  // Notify the other participant
+  const conversation = await prisma.conversation.findUnique({
+    where: { id: conversationId },
+    include: { participants: true },
+  });
+  const receiver = conversation?.participants.find((p) => p.userId !== userId);
+  if (receiver) {
+    await prisma.notification.create({
+      data: { type: "message", senderId: userId, receiverId: receiver.userId, conversationId },
+    });
+  }
+
+  return message;
+};
+
+export const getConversations = async () => {
+  const { userId } = await auth();
+  if (!userId) return [];
+
+  return prisma.conversation.findMany({
+    where: { participants: { some: { userId } } },
+    include: {
+      participants: {
+        include: { user: { select: { id: true, username: true, avatar: true, name: true, surname: true } } },
+      },
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        include: { sender: { select: { id: true, username: true } } },
+      },
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+};
+
+export const markMessagesRead = async (conversationId: number) => {
+  const { userId } = await auth();
+  if (!userId) return;
+  await prisma.message.updateMany({
+    where: { conversationId, read: false, senderId: { not: userId } },
+    data: { read: true },
+  });
+};
+
+export const fetchNotifications = async () => {
+  "use server";
+  const { userId } = await auth();
+  if (!userId) return [];
+  return prisma.notification.findMany({
+    where: { receiverId: userId },
+    include: {
+      sender: { select: { username: true, avatar: true, name: true, surname: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
 };

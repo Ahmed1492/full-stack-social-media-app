@@ -3,14 +3,8 @@ import ProfileCart from "@/components/leftMenue/ProfileCart";
 import Ads from "@/components/leftMenue/Ads";
 import Image from "next/image";
 import Link from "next/link";
-
-const mainLinks = [
-  { href: "/", src: "/home.png", label: "Home", color: "bg-blue-100 text-blue-600", badge: null },
-  { href: "/friends", src: "/friends.png", label: "Friends", color: "bg-green-100 text-green-600", badge: 3 },
-  { href: "/messages", src: "/messages.png", label: "Messages", color: "bg-purple-100 text-purple-600", badge: 5 },
-  { href: "/notifications", src: "/notifications.png", label: "Notifications", color: "bg-red-100 text-red-600", badge: 12 },
-  { href: "/", src: "/stories.png", label: "Stories", color: "bg-yellow-100 text-yellow-600", badge: null },
-];
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/client";
 
 const exploreLinks = [
   { href: "/marketplace", src: "/market.png", label: "MarketPlace", color: "bg-orange-100 text-orange-600", desc: "Buy & sell items" },
@@ -29,15 +23,36 @@ const shortcutLinks = [
   { href: "/search", src: "/search.png", label: "Search" },
 ];
 
-// Mock online friends
-const onlineFriends = [
-  { name: "Sarah K.", avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=100", status: "Active now" },
-  { name: "John D.", avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100", status: "Active now" },
-  { name: "Emma W.", avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=100", status: "2m ago" },
-  { name: "Mike R.", avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100", status: "5m ago" },
-];
+export default async function LeftMenue({ type }) {
+  const { userId } = await auth();
 
-export default function LeftMenue({ type }) {
+  let friendRequestCount = 0;
+  let unreadNotifCount = 0;
+  let onlineFriends = [];
+
+  if (userId) {
+    const [requests, notifs, followings] = await Promise.all([
+      prisma.followerRequest.count({ where: { receiverId: userId } }),
+      prisma.notification.count({ where: { receiverId: userId, read: false } }),
+      prisma.follower.findMany({
+        where: { followerId: userId },
+        include: { following: { select: { id: true, username: true, avatar: true, name: true } } },
+        take: 6,
+      }),
+    ]);
+    friendRequestCount = requests;
+    unreadNotifCount = notifs;
+    onlineFriends = followings.map((f) => f.following);
+  }
+
+  const mainLinks = [
+    { href: "/", src: "/home.png", label: "Home", color: "bg-blue-100 text-blue-600", badge: null },
+    { href: "/friends", src: "/friends.png", label: "Friends", color: "bg-green-100 text-green-600", badge: friendRequestCount || null },
+    { href: "/messages", src: "/messages.png", label: "Messages", color: "bg-purple-100 text-purple-600", badge: null },
+    { href: "/notifications", src: "/notifications.png", label: "Notifications", color: "bg-red-100 text-red-600", badge: unreadNotifCount || null },
+    { href: "/stories", src: "/stories.png", label: "Stories", color: "bg-yellow-100 text-yellow-600", badge: null },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       {type === "home" && (
@@ -69,11 +84,11 @@ export default function LeftMenue({ type }) {
               <Image src={item.src} width={18} height={18} alt="" className="object-contain" />
             </div>
             <span className="font-semibold text-sm flex-1">{item.label}</span>
-            {item.badge && (
+            {item.badge ? (
               <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                 {item.badge > 9 ? "9+" : item.badge}
               </span>
-            )}
+            ) : null}
           </Link>
         ))}
       </div>
@@ -120,34 +135,38 @@ export default function LeftMenue({ type }) {
       {/* Online Friends */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
         <div className="flex items-center justify-between px-2 mb-3">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Online Friends</p>
-          <span className="text-[10px] font-semibold text-blue-500 cursor-pointer hover:text-blue-600">See All</span>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Following</p>
+          <Link href="/friends" className="text-[10px] font-semibold text-blue-500 cursor-pointer hover:text-blue-600">See All</Link>
         </div>
-        <div className="flex flex-col gap-1">
-          {onlineFriends.map((friend) => (
-            <div
-              key={friend.name}
-              className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 cursor-pointer transition-all duration-200 group"
-            >
-              <div className="relative flex-shrink-0">
-                <Image
-                  src={friend.avatar}
-                  alt={friend.name}
-                  width={34}
-                  height={34}
-                  className="w-8 h-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-200 transition-all"
-                />
-                <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                  friend.status === "Active now" ? "bg-green-400" : "bg-yellow-400"
-                }`} />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">{friend.name}</span>
-                <span className="text-[10px] text-gray-400">{friend.status}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+        {onlineFriends.length === 0 ? (
+          <p className="text-xs text-gray-400 text-center py-3">Follow people to see them here</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {onlineFriends.map((friend) => (
+              <Link
+                key={friend.id}
+                href={`/profile/${friend.username}`}
+                className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+              >
+                <div className="relative flex-shrink-0">
+                  <Image
+                    src={friend.avatar || "/noAvatar.png"}
+                    alt={friend.username}
+                    width={34}
+                    height={34}
+                    className="w-8 h-8 rounded-full object-cover ring-2 ring-transparent group-hover:ring-blue-200 transition-all"
+                  />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-semibold text-gray-800 truncate group-hover:text-blue-600 transition-colors">
+                    {friend.name || friend.username}
+                  </span>
+                  <span className="text-[10px] text-gray-400">@{friend.username}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       <Ads size="sm" />

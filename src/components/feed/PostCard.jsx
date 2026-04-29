@@ -8,9 +8,9 @@ import PostInfo from "@/components/feed/PostInfo";
 import PostModal from "@/components/feed/PostModal";
 import CommentList from "@/components/feed/CommentList";
 
-export default function PostCard({ post, userId, comments }) {
+export default function PostCard({ post, userId, comments, autoOpenComments = false }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(autoOpenComments);
 
   return (
     <>
@@ -40,7 +40,7 @@ export default function PostCard({ post, userId, comments }) {
               </span>
             </div>
           </Link>
-          {userId === post.user.id && <PostInfo postId={post.id} />}
+          {userId === post.user.id && <PostInfo post={post} onView={() => setModalOpen(true)} />}
         </div>
 
         {/* Description */}

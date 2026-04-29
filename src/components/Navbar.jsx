@@ -3,7 +3,6 @@ import React from "react";
 import MobileMenue from "@/components/MobileMenue";
 import SearchUsers from "@/components/SearchUsers";
 import Image from "next/image";
-// import NavbarThemeToggle from "@/components/NavbarThemeToggle"; // TODO: dark mode
 import {
   ClerkLoaded,
   ClerkLoading,
@@ -11,19 +10,15 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/client";
+import NotificationPopup from "@/components/NotificationPopup";
 
 const navLinks = [
   { href: "/", src: "/home.png", label: "Home" },
   { href: "/friends", src: "/friends.png", label: "Friends" },
   { href: "/messages", src: "/messages.png", label: "Messages" },
 ];
-
-const BellIcon = () => (
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-  </svg>
-);
 
 const GearIcon = () => (
   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -32,12 +27,21 @@ const GearIcon = () => (
   </svg>
 );
 
-const iconButtons = [
-  { alt: "notifications", href: "/notifications", badge: 5, Icon: BellIcon },
-  { alt: "settings", href: "/settings", badge: null, Icon: GearIcon },
-];
+export default async function Navbar() {
+  const { userId } = await auth();
 
-export default function Navbar() {
+  let notifications = [];
+  if (userId) {
+    notifications = await prisma.notification.findMany({
+      where: { receiverId: userId },
+      include: {
+        sender: { select: { username: true, avatar: true, name: true, surname: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    });
+  }
+
   return (
     <nav className="h-16 flex items-center justify-between gap-4">
       {/* Logo */}
@@ -50,27 +54,28 @@ export default function Navbar() {
         </span>
       </Link>
 
-      {/* Nav links */}
-      <div className="hidden md:flex items-center gap-0.5 flex-1 justify-center">
-        {navLinks.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-500 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-200 group font-semibold text-sm"
-          >
-            <Image
-              src={link.src}
-              alt=""
-              width={17}
-              height={17}
-              className="opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200"
-            />
-            {link.label}
-            {/* Active dot */}
-            <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-          </Link>
-        ))}
-      </div>
+      {/* Nav links - only when signed in */}
+      <SignedIn>
+        <div className="hidden md:flex items-center gap-0.5 flex-1 justify-center">
+          {navLinks.map((link) => (
+            <Link
+              key={link.label}
+              href={link.href}
+              className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-gray-500 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-200 group font-semibold text-sm"
+            >
+              <Image
+                src={link.src}
+                alt=""
+                width={17}
+                height={17}
+                className="opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-200"
+              />
+              {link.label}
+              <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            </Link>
+          ))}
+        </div>
+      </SignedIn>
 
       {/* Right side */}
       <div className="flex items-center gap-1 flex-shrink-0">
@@ -82,22 +87,17 @@ export default function Navbar() {
 
         <ClerkLoaded>
           <SignedIn>
-            {/* <NavbarThemeToggle /> TODO: dark mode */}
             <div className="flex items-center gap-0.5 ml-1">
-              {iconButtons.map(({ alt, href, badge, Icon }) => (
-                <Link
-                  key={alt}
-                  href={href}
-                  className="relative w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-200 hover:scale-110 group"
-                >
-                  <Icon />
-                  {badge && (
-                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-bounce-in shadow-sm">
-                      {badge > 9 ? "9+" : badge}
-                    </span>
-                  )}
-                </Link>
-              ))}
+              {/* Notification popup */}
+              <NotificationPopup notifications={notifications} />
+
+              {/* Settings */}
+              <Link
+                href="/settings"
+                className="relative w-9 h-9 flex items-center justify-center rounded-xl text-gray-400 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-200 hover:scale-110"
+              >
+                <GearIcon />
+              </Link>
             </div>
 
             <div className="w-px h-6 bg-gray-200 mx-2" />
